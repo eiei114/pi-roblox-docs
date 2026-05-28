@@ -1,0 +1,51 @@
+{
+  "name": "pi-roblox-docs",
+  "version": "0.1.0",
+  "description": "Pi native Roblox documentation tools without a background MCP server.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "roblox",
+    "luau",
+    "documentation"
+  ],
+  "license": "MIT",
+  "author": "Keisu",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eiei114/pi-roblox-docs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eiei114/pi-roblox-docs/issues"
+  },
+  "homepage": "https://github.com/eiei114/pi-roblox-docs#readme",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "extensions"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit && npm pack --dry-run",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "latest",
+    "@types/node": "latest",
+    "typebox": "latest",
+    "typescript": "latest"
+  }
+}
+
