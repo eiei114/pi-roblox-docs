@@ -34,22 +34,22 @@ Public sources used by the extension:
 
 ## Install
 
-Local development:
+From npm:
 
 ```bash
-pi -e ./extensions/roblox-docs.ts
-```
-
-As a Pi package from this directory:
-
-```bash
-pi install ./path/to/pi-roblox-docs
+pi install npm:pi-roblox-docs
 ```
 
 From GitHub:
 
 ```bash
 pi install git:github.com/eiei114/pi-roblox-docs
+```
+
+Local development:
+
+```bash
+pi -e ./extensions/roblox-docs.ts
 ```
 
 ## Development
