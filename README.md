@@ -1,5 +1,10 @@
 # pi-roblox-docs
 
+[![CI](https://github.com/eiei114/pi-roblox-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-roblox-docs/actions/workflows/ci.yml)
+[![Publish](https://github.com/eiei114/pi-roblox-docs/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-roblox-docs/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/pi-roblox-docs.svg)](https://www.npmjs.com/package/pi-roblox-docs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Pi native Roblox documentation tools.
 
 This package does **not** start an MCP server, `uvx`, or a background Node daemon. It runs inside Pi's TypeScript extension runtime and registers Roblox documentation tools directly with `pi.registerTool()`.

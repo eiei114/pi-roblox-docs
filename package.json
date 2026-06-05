@@ -26,7 +26,9 @@
     "extensions"
   ],
   "scripts": {
-    "check": "tsc --noEmit && npm pack --dry-run",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run pack:dry",
     "pack:dry": "npm pack --dry-run"
   },
   "publishConfig": {
