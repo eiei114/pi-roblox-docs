@@ -1,6 +1,6 @@
 {
   "name": "pi-roblox-docs",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Pi native Roblox documentation tools without a background MCP server.",
   "type": "module",
   "keywords": [
@@ -26,7 +26,9 @@
     "extensions"
   ],
   "scripts": {
-    "check": "tsc --noEmit && npm pack --dry-run",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm test && npm run pack:dry",
     "pack:dry": "npm pack --dry-run",
     "version:check": "node scripts/check-version-bump.mjs"
   },
