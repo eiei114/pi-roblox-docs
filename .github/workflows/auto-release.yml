@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -61,8 +61,11 @@ jobs:
       - name: Create tag and release
         if: steps.check.outputs.released == 'true'
         shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.check.outputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ steps.check.outputs.tag }}"
+          TAG="$RELEASE_TAG"
           PREV_TAG=$(git tag --sort=-version:refname | head -1)
           NOTES="Released ${TAG}."
           if [ -n "$PREV_TAG" ]; then
@@ -71,14 +74,12 @@ jobs:
           git tag "$TAG"
           git push origin "$TAG"
           gh release create "$TAG" --title "$TAG" --notes "$NOTES"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger publish workflow
         if: steps.check.outputs.released == 'true'
         shell: bash
-        run: |
-          TAG="${{ steps.check.outputs.tag }}"
-          gh workflow run publish.yml --ref "$TAG" -f ref="$TAG"
         env:
+          RELEASE_TAG: ${{ steps.check.outputs.tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run publish.yml --ref "$RELEASE_TAG" -f ref="$RELEASE_TAG"
