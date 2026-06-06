@@ -22,9 +22,8 @@ test("package uses public publish config", () => {
 test("ci workflow validates pull requests and main", () => {
   assert.match(ciWorkflow, /pull_request:/);
   assert.match(ciWorkflow, /branches:\s*\[main\]/);
-  assert.match(ciWorkflow, /npm run typecheck/);
-  assert.match(ciWorkflow, /npm test/);
-  assert.match(ciWorkflow, /npm pack --dry-run/);
+  assert.match(ciWorkflow, /npm run check/);
+  assert.match(ciWorkflow, /npm run version:check/);
 });
 
 test("release workflow hands off to npm publish", () => {
