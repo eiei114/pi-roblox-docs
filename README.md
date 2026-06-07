@@ -91,3 +91,13 @@ The extension does not write large Roblox JSON files into your project or Obsidi
 
 DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `/roblox:clear-cache`.
 
+## Security
+
+Pi packages can execute code with your local permissions. Review extensions before installing third-party packages.
+
+For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
+
+## Release
+
+Version history and release notes are in [`CHANGELOG.md`](CHANGELOG.md).
+

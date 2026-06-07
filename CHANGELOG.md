@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-06-07
+
+### Added
+
+- `SECURITY.md` with vulnerability reporting instructions and supported-version policy.
+- README Security and Release sections linking to `SECURITY.md` and `CHANGELOG.md`.
+- Packaged `SECURITY.md` and `CHANGELOG.md` in the npm tarball via `package.json` `files`.
+
+### Changed
+
+- Seeded earlier release history (`0.1.0`, `0.1.1`) in Keep a Changelog format.
+
 ## [0.1.3] - 2026-06-06
 
 ### Fixed
@@ -25,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped package version to 0.1.2 to trigger auto-release publish (0.1.2 CHANGELOG existed but package.json was 0.1.1).
 - Added CI verification that publishable changes must bump `package.json` and update `CHANGELOG.md` in the same PR.
 
-## [prior releases]
+## [0.1.1] - 2026-05-29
 
-See git history and GitHub releases for earlier changes.
+### Added
+
+- npm and GitHub install instructions in README.
+
+## [0.1.0] - 2026-05-29
+
+### Added
+
+- Initial Pi native Roblox documentation extension with sync, search, and DevForum tools.
