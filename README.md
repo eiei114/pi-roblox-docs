@@ -9,6 +9,8 @@ Pi native Roblox documentation tools.
 
 This package does **not** start an MCP server, `uvx`, or a background Node daemon. It runs inside Pi's TypeScript extension runtime and registers Roblox documentation tools directly with `pi.registerTool()`.
 
+For maintenance direction, phased goals, and the `pi-extension-template` compliance checklist, see [`ROADMAP.md`](ROADMAP.md).
+
 ## Tools
 
 MVP tools:
@@ -99,5 +101,5 @@ For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
 
 ## Release
 
-Version history and release notes are in [`CHANGELOG.md`](CHANGELOG.md).
+Version history and release notes are in [`CHANGELOG.md`](CHANGELOG.md). Roadmap and maintenance direction are in [`ROADMAP.md`](ROADMAP.md).
 
