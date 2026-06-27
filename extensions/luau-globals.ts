@@ -114,7 +114,7 @@ export function formatLuauGlobal(item: LuauGlobalItem, options: { memberLimit?: 
     }
   } else {
     const params = (entry.params ?? []).map((param) => param.name ?? "arg").join(", ");
-    if ((entry.params ?? []).length > 0) {
+    if (Array.isArray(entry.params)) {
       const returnHint = (entry.returns ?? []).length > 0 ? " -> ..." : "";
       lines.push(`Signature: ${name}(${params})${returnHint}`);
     }

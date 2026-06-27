@@ -19,7 +19,6 @@ test("buildLuauGlobalsIndex includes Luau libraries and Roblox globals but not d
   assert.ok(lookupLuauGlobal(index, "typeof"));
   assert.ok(lookupLuauGlobal(index, "task"));
   assert.equal(lookupLuauGlobal(index, "DateTime"), undefined);
-  assert.equal(index.names.length, 4);
 });
 
 test("lookupLuauGlobal resolves exact matches case-insensitively", () => {

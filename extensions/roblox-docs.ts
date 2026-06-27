@@ -939,7 +939,12 @@ export default function (pi: ExtensionAPI) {
         return toolText(formatLuauGlobalMiss(params.name, suggestions), { error: "not_found", suggestions });
       }
       const output = truncateOutput(formatLuauGlobal(item, { memberLimit: clampLimit(params.memberLimit, 40, 200) })).text;
-      return toolText(output, { name: item.name, source: item.source, kind: item.entry.keys ? "library" : "function" });
+      const kind = item.entry.keys
+        ? "library"
+        : Array.isArray(item.entry.params)
+          ? "function"
+          : "global";
+      return toolText(output, { name: item.name, source: item.source, kind });
     },
   });
 
