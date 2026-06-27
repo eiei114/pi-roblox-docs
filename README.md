@@ -16,7 +16,7 @@ For maintenance direction, phased goals, and the `pi-extension-template` complia
 MVP tools:
 
 - `roblox_sync` - download/update local Roblox API cache
-- `roblox_health` - show cache/index status
+- `roblox_health` - show cache/index status and whether the local cache is fresh or stale
 - `roblox_search` - search classes, members, and enums
 - `roblox_get_class` - show one class with grouped members
 - `roblox_get_member` - show one class member
@@ -29,7 +29,7 @@ MVP tools:
 
 - `/roblox:sync` - sync local Roblox docs cache
 - `/roblox:sync --force` - redownload even when versions match
-- `/roblox:health` - show cache/index status
+- `/roblox:health` - show cache/index status and cache freshness
 - `/roblox:devforum <query>` - search DevForum discussions
 - `/roblox:clear-cache` - delete local cache after confirmation
 
@@ -99,6 +99,8 @@ Cache location is OS-specific:
 - Linux: `~/.cache/pi-roblox-docs`
 
 The extension does not write large Roblox JSON files into your project or Obsidian vault.
+
+`roblox_health` and `/roblox:health` report cache freshness using a **7-day stale threshold** based on `metadata.json` `lastSync`. Fresh caches stay compact; stale or missing caches include a short recommendation to run `roblox_sync`.
 
 DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `/roblox:clear-cache`.
 
