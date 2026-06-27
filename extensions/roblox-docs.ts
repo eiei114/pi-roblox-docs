@@ -4,6 +4,11 @@ import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import {
+  assessCacheFreshness,
+  formatCacheFreshnessLines,
+  type CacheFreshnessInfo,
+} from "./cache-freshness.js";
+import {
   buildLuauGlobalsIndex,
   formatLuauGlobal,
   formatLuauGlobalMiss,
@@ -729,6 +734,50 @@ function toolText(text: string, details: Record<string, unknown> = {}): any {
   return { content: [{ type: "text", text }], details };
 }
 
+function buildRobloxHealthReport(options: {
+  paths: ReturnType<typeof cachePaths>;
+  hasApiDump: boolean;
+  hasApiDocs: boolean;
+  meta: CacheMeta;
+  data: LoadedData | undefined;
+}): { text: string; details: { cacheDir: string; hasApiDump: boolean; hasApiDocs: boolean; meta: CacheMeta; indexed: boolean; cacheFreshness: CacheFreshnessInfo } } {
+  const { paths, hasApiDump, hasApiDocs, meta, data } = options;
+  const freshness = assessCacheFreshness({
+    lastSync: meta.lastSync,
+    hasApiDump,
+    hasApiDocs,
+  });
+  const lines = [
+    "ROBLOX DOCS HEALTH",
+    "",
+    `Cache: ${paths.dir}`,
+    `API dump cached: ${hasApiDump ? "yes" : "no"}`,
+    `API docs cached: ${hasApiDocs ? "yes" : "no"}`,
+    `Language: ${meta.language ?? DEFAULT_LANGUAGE}`,
+    `Remote version: ${meta.version ?? "unknown"}`,
+    `API dump version: ${meta.apiDumpVersion ?? data?.dump.Version ?? "unknown"}`,
+    `Last sync: ${meta.lastSync ?? "never"}`,
+    ...formatCacheFreshnessLines(freshness),
+  ];
+  if (data) {
+    lines.push(
+      "",
+      "INDEX:",
+      `Classes: ${data.dump.Classes?.length ?? 0}`,
+      `Members: ${(data.dump.Classes ?? []).reduce((sum, cls) => sum + (cls.Members?.length ?? 0), 0)}`,
+      `Enums: ${data.dump.Enums?.length ?? 0}`,
+      `Luau globals: ${data.luauGlobals.names.length}`,
+      `Search items: ${data.searchItems.length}`,
+    );
+  } else {
+    lines.push("", "INDEX: not built (run roblox_sync first)");
+  }
+  return {
+    text: lines.join("\n"),
+    details: { cacheDir: paths.dir, hasApiDump, hasApiDocs, meta, indexed: Boolean(data), cacheFreshness: freshness },
+  };
+}
+
 export default function (pi: ExtensionAPI) {
   pi.on("session_start", async (_event, ctx) => {
     if (await exists(cachePaths(DEFAULT_LANGUAGE).apiDump)) {
@@ -796,13 +845,8 @@ export default function (pi: ExtensionAPI) {
       const paths = cachePaths(DEFAULT_LANGUAGE);
       const [hasApiDump, hasApiDocs, meta] = await Promise.all([exists(paths.apiDump), exists(paths.apiDocs), readMeta(DEFAULT_LANGUAGE)]);
       const data = await loadData(DEFAULT_LANGUAGE);
-      const lines = ["ROBLOX DOCS HEALTH", "", `Cache: ${paths.dir}`, `API dump cached: ${hasApiDump ? "yes" : "no"}`, `API docs cached: ${hasApiDocs ? "yes" : "no"}`, `Language: ${meta.language ?? DEFAULT_LANGUAGE}`, `Remote version: ${meta.version ?? "unknown"}`, `API dump version: ${meta.apiDumpVersion ?? data?.dump.Version ?? "unknown"}`, `Last sync: ${meta.lastSync ?? "never"}`];
-      if (data) {
-        lines.push("", "INDEX:", `Classes: ${data.dump.Classes?.length ?? 0}`, `Members: ${(data.dump.Classes ?? []).reduce((sum, cls) => sum + (cls.Members?.length ?? 0), 0)}`, `Enums: ${data.dump.Enums?.length ?? 0}`, `Luau globals: ${data.luauGlobals.names.length}`, `Search items: ${data.searchItems.length}`);
-      } else {
-        lines.push("", "INDEX: not built (run roblox_sync first)");
-      }
-      return toolText(lines.join("\n"), { cacheDir: paths.dir, hasApiDump, hasApiDocs, meta, indexed: Boolean(data) });
+      const report = buildRobloxHealthReport({ paths, hasApiDump, hasApiDocs, meta, data });
+      return toolText(report.text, report.details);
     },
   });
 
@@ -971,16 +1015,9 @@ export default function (pi: ExtensionAPI) {
       const paths = cachePaths(DEFAULT_LANGUAGE);
       const [hasApiDump, hasApiDocs, meta] = await Promise.all([exists(paths.apiDump), exists(paths.apiDocs), readMeta(DEFAULT_LANGUAGE)]);
       const data = await loadData(DEFAULT_LANGUAGE);
-      const text = [
-        "ROBLOX DOCS HEALTH",
-        `Cache: ${paths.dir}`,
-        `API dump cached: ${hasApiDump ? "yes" : "no"}`,
-        `API docs cached: ${hasApiDocs ? "yes" : "no"}`,
-        `Version: ${meta.version ?? "unknown"}`,
-        `Last sync: ${meta.lastSync ?? "never"}`,
-        data ? `Classes: ${data.dump.Classes?.length ?? 0}, Enums: ${data.dump.Enums?.length ?? 0}, Luau globals: ${data.luauGlobals.names.length}` : "Index: not built",
-      ].join("\n");
-      ctx.ui.notify(text, hasApiDump && hasApiDocs ? "info" : "warning");
+      const report = buildRobloxHealthReport({ paths, hasApiDump, hasApiDocs, meta, data });
+      const warn = report.details.cacheFreshness.state !== "fresh";
+      ctx.ui.notify(report.text, warn ? "warning" : "info");
     },
   });
 
