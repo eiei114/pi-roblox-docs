@@ -91,7 +91,15 @@ Cache location is OS-specific:
 
 The extension does not write large Roblox JSON files into your project or Obsidian vault.
 
-DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `/roblox:clear-cache`.
+DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `roblox_clear_cache` and `/roblox:clear-cache`.
+
+### Clearing cache
+
+Use `roblox_clear_cache` or `/roblox:clear-cache` when local sync or index data looks corrupted, you suspect stale files after manual edits, or you want a clean re-download. The tool deletes only the package-owned `pi-roblox-docs` cache directory shown above. It does not delete project files, your Obsidian vault, or caches owned by other Pi packages.
+
+After clearing, run `roblox_sync` before `roblox_search` and other API lookup tools work again. `roblox_health` reports missing cache files and `INDEX: not built (run roblox_sync first)` until you sync.
+
+You usually do **not** need to clear cache for routine Roblox API version updates; `roblox_sync` skips the download when versions already match unless you pass `force=true`.
 
 ## Security
 

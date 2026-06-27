@@ -5,7 +5,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox";
-const USER_AGENT = "pi-roblox-docs/0.1.0";
+const USER_AGENT = "pi-roblox-docs/0.2.0";
 const DEFAULT_LANGUAGE = "en-us";
 const MAX_OUTPUT_CHARS = 45_000;
 const DEFAULT_SEARCH_LIMIT = 15;
@@ -224,7 +224,7 @@ async function syncRobloxData(force: boolean, language: string, signal?: AbortSi
   return { ...meta, cacheDir: paths.dir, downloaded, skipped: false };
 }
 
-async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean }> {
+export async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean }> {
   const dir = getCacheDir();
   const existed = await exists(dir);
   if (existed) {
@@ -232,6 +232,25 @@ async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean 
   }
   loadedData = undefined;
   return { cacheDir: dir, existed };
+}
+
+export function formatClearCacheMessage(result: { cacheDir: string; existed: boolean }): string {
+  const statusLine = result.existed
+    ? `Roblox docs cache cleared.\nDeleted: ${result.cacheDir}`
+    : `Roblox docs cache was already empty.\nCache path: ${result.cacheDir}`;
+  return `${statusLine}\n\nRun roblox_sync before roblox_search and other API lookups work again.`;
+}
+
+export async function inspectCacheHealth(language = DEFAULT_LANGUAGE): Promise<{
+  cacheDir: string;
+  hasApiDump: boolean;
+  hasApiDocs: boolean;
+  indexed: boolean;
+}> {
+  const paths = cachePaths(language);
+  const [hasApiDump, hasApiDocs] = await Promise.all([exists(paths.apiDump), exists(paths.apiDocs)]);
+  const data = await loadData(language);
+  return { cacheDir: paths.dir, hasApiDump, hasApiDocs, indexed: Boolean(data) };
 }
 
 async function readDevForumCache(): Promise<DevForumCacheFile> {
@@ -762,15 +781,14 @@ export default function (pi: ExtensionAPI) {
     promptSnippet: "Delete local Roblox docs cache",
     promptGuidelines: [
       "Use roblox_clear_cache when the user asks to clear Roblox docs cache or reset pi-roblox-docs local data.",
+      "roblox_clear_cache only deletes the package-owned pi-roblox-docs cache directory; it does not touch project files or other Pi caches.",
+      "After roblox_clear_cache, tell the user to run roblox_sync before search and API lookup tools work again.",
     ],
     parameters: Type.Object({}),
     async execute(_toolCallId, _params, _signal, _onUpdate, ctx) {
       const result = await clearRobloxCache();
       ctx.ui.setStatus("roblox-docs", "roblox-docs: run roblox_sync");
-      const text = result.existed
-        ? `Roblox docs cache cleared.\nDeleted: ${result.cacheDir}`
-        : `Roblox docs cache was already empty.\nCache path: ${result.cacheDir}`;
-      return toolText(text, result);
+      return toolText(formatClearCacheMessage(result), { ...result, syncRequired: true });
     },
   });
 
@@ -970,7 +988,7 @@ export default function (pi: ExtensionAPI) {
       }
       const result = await clearRobloxCache();
       ctx.ui.setStatus("roblox-docs", "roblox-docs: run roblox_sync");
-      ctx.ui.notify(result.existed ? `Roblox docs cache cleared: ${result.cacheDir}` : `Cache was already empty: ${result.cacheDir}`, "info");
+      ctx.ui.notify(formatClearCacheMessage(result), "info");
     },
   });
 }

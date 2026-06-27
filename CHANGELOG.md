@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-28
+
+### Added
+
+- `roblox_clear_cache` maintenance tool output now states that `roblox_sync` is required before search and API lookups work again.
+- Exported cache helpers (`clearRobloxCache`, `formatClearCacheMessage`, `inspectCacheHealth`) for behavioral tests.
+- `tests/clear-cache.test.mjs` covers clear-after-sync and clear-when-empty flows, including post-clear health state.
+- README documents cache-clear use cases, package-owned boundaries, and when clearing is unnecessary.
+
+### Changed
+
+- `/roblox:clear-cache` confirmation flow uses the same sync-required guidance as the tool.
+
 ## [0.1.5] - 2026-06-24
 
 ### Added
