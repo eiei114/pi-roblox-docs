@@ -1,0 +1,41 @@
+{
+  "@luau/global/math": {
+    "documentation": "A library of math functions.",
+    "keys": {
+      "abs": "@luau/global/math.abs",
+      "floor": "@luau/global/math.floor"
+    },
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/libraries/math",
+    "code_sample": ""
+  },
+  "@luau/global/math.abs": {
+    "documentation": "Returns the absolute value of <code>x</code>.",
+    "params": [{ "name": "x", "documentation": "@luau/global/math.abs/param/0" }],
+    "returns": ["@luau/global/math.abs/return/0"],
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/libraries/math#abs",
+    "code_sample": ""
+  },
+  "@roblox/global/typeof": {
+    "documentation": "Returns the type of the given object as a string, also supporting Roblox-specific types (e.g. Vector3).",
+    "params": [{ "name": "object", "documentation": "@roblox/global/typeof/param/0" }],
+    "returns": ["@roblox/global/typeof/return/0"],
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals#typeof",
+    "code_sample": ""
+  },
+  "@roblox/global/task": {
+    "documentation": "Allows for functions and threads to be coordinated with the engine's scheduler.",
+    "keys": {
+      "wait": "@roblox/global/task.wait"
+    },
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/libraries/task",
+    "code_sample": ""
+  },
+  "@roblox/global/DateTime": {
+    "documentation": "A data type that represents a moment in time.",
+    "keys": {
+      "now": "@roblox/global/DateTime.now"
+    },
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/datatypes/DateTime",
+    "code_sample": ""
+  }
+}
