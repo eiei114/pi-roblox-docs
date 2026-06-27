@@ -21,6 +21,7 @@ MVP tools:
 - `roblox_get_class` - show one class with grouped members
 - `roblox_get_member` - show one class member
 - `roblox_get_enum` - show enum values
+- `roblox_get_luau_global` - look up Luau built-ins and Roblox globals/libraries
 - `roblox_search_devforum` - search Roblox Developer Forum discussions
 - `roblox_clear_cache` - delete local cache
 
@@ -80,6 +81,14 @@ Then ask Roblox API questions. Examples:
 - "Is BodyPosition deprecated?"
 - "What enum values does EasingStyle have?"
 - "Find APIs for player character spawning."
+- "What does task.wait do?"
+- "How do I use math.clamp?"
+
+### Luau globals vs Roblox classes
+
+Use `roblox_get_luau_global` for **Luau built-ins** (`math`, `string`, `coroutine`, `print`, `pcall`) and **Roblox globals/libraries** (`task`, `typeof`, `game`, `workspace`).
+
+Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, and `roblox_get_enum` for **Roblox instance APIs** — classes like `Part`, services like `TweenService`, and enums like `EasingStyle`. Datatypes such as `Vector3` and `CFrame` stay on the class/member path, not Luau global lookup.
 
 ## Cache
 

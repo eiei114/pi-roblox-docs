@@ -3,6 +3,13 @@ import { Type } from "typebox";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import {
+  buildLuauGlobalsIndex,
+  formatLuauGlobal,
+  formatLuauGlobalMiss,
+  lookupLuauGlobal,
+  suggestLuauGlobals,
+} from "./luau-globals.js";
 
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox";
 const USER_AGENT = "pi-roblox-docs/0.1.0";
@@ -81,6 +88,8 @@ interface SearchResult {
   score: number;
 }
 
+import type { LuauGlobalsIndex } from "./luau-globals.js";
+
 interface LoadedData {
   dump: ApiDump;
   docs: Record<string, unknown>;
@@ -89,6 +98,7 @@ interface LoadedData {
   enumMap: Map<string, ApiEnum>;
   inheritanceMap: Map<string, string[]>;
   searchItems: SearchResult[];
+  luauGlobals: LuauGlobalsIndex;
   meta: CacheMeta;
 }
 
@@ -412,7 +422,8 @@ function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: Cac
     enumMap.set(normalizeName(enumInfo.Name), enumInfo);
   }
 
-  const dataShell = { dump, docs, docsMap, classMap, enumMap, inheritanceMap, searchItems, meta } satisfies LoadedData;
+  const luauGlobals = buildLuauGlobalsIndex(docs);
+  const dataShell = { dump, docs, docsMap, classMap, enumMap, inheritanceMap, searchItems, luauGlobals, meta } satisfies LoadedData;
 
   for (const cls of dump.Classes ?? []) {
     if (!cls.Name) continue;
@@ -787,7 +798,7 @@ export default function (pi: ExtensionAPI) {
       const data = await loadData(DEFAULT_LANGUAGE);
       const lines = ["ROBLOX DOCS HEALTH", "", `Cache: ${paths.dir}`, `API dump cached: ${hasApiDump ? "yes" : "no"}`, `API docs cached: ${hasApiDocs ? "yes" : "no"}`, `Language: ${meta.language ?? DEFAULT_LANGUAGE}`, `Remote version: ${meta.version ?? "unknown"}`, `API dump version: ${meta.apiDumpVersion ?? data?.dump.Version ?? "unknown"}`, `Last sync: ${meta.lastSync ?? "never"}`];
       if (data) {
-        lines.push("", "INDEX:", `Classes: ${data.dump.Classes?.length ?? 0}`, `Members: ${(data.dump.Classes ?? []).reduce((sum, cls) => sum + (cls.Members?.length ?? 0), 0)}`, `Enums: ${data.dump.Enums?.length ?? 0}`, `Search items: ${data.searchItems.length}`);
+        lines.push("", "INDEX:", `Classes: ${data.dump.Classes?.length ?? 0}`, `Members: ${(data.dump.Classes ?? []).reduce((sum, cls) => sum + (cls.Members?.length ?? 0), 0)}`, `Enums: ${data.dump.Enums?.length ?? 0}`, `Luau globals: ${data.luauGlobals.names.length}`, `Search items: ${data.searchItems.length}`);
       } else {
         lines.push("", "INDEX: not built (run roblox_sync first)");
       }
@@ -906,6 +917,32 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerTool({
+    name: "roblox_get_luau_global",
+    label: "Roblox Luau Global",
+    description: "Look up documented Luau built-ins and Roblox globals/libraries such as math, task, and typeof from local docs cache.",
+    promptSnippet: "Look up Luau built-ins and Roblox globals/libraries",
+    promptGuidelines: [
+      "Use roblox_get_luau_global for Luau built-ins (math, string, coroutine) and Roblox globals/libraries (task, typeof, game).",
+      "Use roblox_get_class / roblox_get_member / roblox_get_enum for Roblox instance classes, members, and enums.",
+    ],
+    parameters: Type.Object({
+      name: Type.String({ description: "Global or library name, e.g. math, math.abs, task.wait, typeof." }),
+      memberLimit: Type.Optional(Type.Number({ default: 40, description: "Maximum members shown for library globals." })),
+    }),
+    async execute(_toolCallId, params) {
+      const data = await loadData(DEFAULT_LANGUAGE);
+      if (!data) return toolText(notSyncedMessage(), { error: "not_synced", cacheDir: getCacheDir() });
+      const item = lookupLuauGlobal(data.luauGlobals, params.name);
+      if (!item) {
+        const suggestions = suggestLuauGlobals(data.luauGlobals, params.name, 8);
+        return toolText(formatLuauGlobalMiss(params.name, suggestions), { error: "not_found", suggestions });
+      }
+      const output = truncateOutput(formatLuauGlobal(item, { memberLimit: clampLimit(params.memberLimit, 40, 200) })).text;
+      return toolText(output, { name: item.name, source: item.source, kind: item.entry.keys ? "library" : "function" });
+    },
+  });
+
   pi.registerCommand("roblox:sync", {
     description: "Sync local Roblox docs cache (use --force to redownload)",
     handler: async (args, ctx) => {
@@ -936,7 +973,7 @@ export default function (pi: ExtensionAPI) {
         `API docs cached: ${hasApiDocs ? "yes" : "no"}`,
         `Version: ${meta.version ?? "unknown"}`,
         `Last sync: ${meta.lastSync ?? "never"}`,
-        data ? `Classes: ${data.dump.Classes?.length ?? 0}, Enums: ${data.dump.Enums?.length ?? 0}` : "Index: not built",
+        data ? `Classes: ${data.dump.Classes?.length ?? 0}, Enums: ${data.dump.Enums?.length ?? 0}, Luau globals: ${data.luauGlobals.names.length}` : "Index: not built",
       ].join("\n");
       ctx.ui.notify(text, hasApiDump && hasApiDocs ? "info" : "warning");
     },
