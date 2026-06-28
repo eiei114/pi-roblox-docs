@@ -18,7 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `/roblox:clear-cache` confirmation flow uses the same sync-required guidance as the tool.
 
-## [0.1.6] - 2026-06-28
+## [0.1.7] - 2026-06-28
+
+### Added
+
+- `roblox_health` and `/roblox:health` now report last sync age, cache freshness (`fresh` / `stale` / `not synced`), and a concise `roblox_sync` recommendation when the cache is stale or missing.
+- `extensions/cache-freshness.ts` with a documented 7-day stale threshold and tests for fresh, stale, and never-synced states.
+- README cache policy describing the stale threshold and how to respond to warnings.
+
+## [0.1.6] - 2026-06-27
 
 ### Added
 
