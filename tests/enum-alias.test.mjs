@@ -25,6 +25,12 @@ test("lookupEnum resolves exact matches case-insensitively", () => {
   assert.match(output, /Linear = 0/);
 });
 
+test("lookupEnum resolves separator-insensitive exact matches", () => {
+  const item = lookupEnum(index, "easing style");
+  assert.ok(item);
+  assert.equal(item.Name, "EasingStyle");
+});
+
 test("suggestEnums returns bounded alias and near-miss targets", () => {
   const aliasSuggestions = suggestEnums(index, "easing style", 3);
   assert.deepEqual(aliasSuggestions.map((item) => item.name), ["EasingStyle"]);

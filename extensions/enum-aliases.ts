@@ -62,9 +62,11 @@ export function buildEnumLookupIndex(enums: ApiEnum[]): EnumLookupIndex {
 
   for (const enumInfo of enums) {
     if (!enumInfo.Name) continue;
-    const normalized = enumInfo.Name.toLowerCase();
-    if (byName.has(normalized)) continue;
-    byName.set(normalized, enumInfo);
+    const lowerName = enumInfo.Name.trim().toLowerCase();
+    if (byName.has(lowerName)) continue;
+    byName.set(lowerName, enumInfo);
+    const normalizedName = normalizeQuery(enumInfo.Name);
+    if (normalizedName && !byName.has(normalizedName)) byName.set(normalizedName, enumInfo);
     names.push(enumInfo.Name);
   }
 
@@ -73,7 +75,7 @@ export function buildEnumLookupIndex(enums: ApiEnum[]): EnumLookupIndex {
 }
 
 export function lookupEnum(index: EnumLookupIndex, query: string): ApiEnum | undefined {
-  return index.byName.get(query.trim().toLowerCase());
+  return index.byName.get(query.trim().toLowerCase()) ?? index.byName.get(normalizeQuery(query));
 }
 
 export function scoreEnumMatch(enumName: string, query: string): { score: number; matchKind: EnumSuggestion["matchKind"] } | null {

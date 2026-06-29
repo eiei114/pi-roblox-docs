@@ -995,7 +995,8 @@ export default function (pi: ExtensionAPI) {
       const limit = clampLimit(params.limit, 8, 15);
       const suggestions = suggestEnums(data.enumLookup, params.query, limit);
       if (suggestions.length === 0) {
-        return toolText(formatEnumLookupMiss(params.query), { query: params.query, match: "none", suggestions: [] });
+        const output = truncateOutput(formatEnumLookupMiss(params.query)).text;
+        return toolText(output, { query: params.query, match: "none", suggestions: [] });
       }
 
       const output = truncateOutput(formatEnumSuggestions(params.query, suggestions)).text;
