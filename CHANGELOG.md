@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-29
+
+### Added
+
+- `roblox_lookup_enum` tool for resolving fuzzy enum names, aliases, and near-miss spellings from the local docs cache.
+- `extensions/enum-aliases.ts` with deterministic enum suggestion scoring and explicit no-match messaging.
+- `tests/enum-alias.test.mjs` covering exact match, alias/near-miss suggestions, and no-match behavior.
+- README enum alias lookup examples and guidance on when to use `roblox_lookup_enum` vs `roblox_get_enum`.
+
 ## [0.2.0] - 2026-06-28
 
 ### Added

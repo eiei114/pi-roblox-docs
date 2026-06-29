@@ -1,0 +1,23 @@
+[
+  {
+    "Name": "EasingStyle",
+    "Items": [
+      { "Name": "Linear", "Value": 0 },
+      { "Name": "Sine", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "Material",
+    "Items": [
+      { "Name": "Plastic", "Value": 0 },
+      { "Name": "Wood", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "KeyCode",
+    "Items": [
+      { "Name": "A", "Value": 65 },
+      { "Name": "Space", "Value": 32 }
+    ]
+  }
+]
