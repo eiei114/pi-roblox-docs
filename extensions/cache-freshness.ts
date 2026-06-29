@@ -99,3 +99,8 @@ export function formatCacheFreshnessLines(freshness: CacheFreshnessInfo): string
 
   return [`Cache freshness: fresh (synced ${freshness.ageLabel})`];
 }
+
+// Helper module lives under /extensions for packaging convenience.
+// Pi loads every file in that directory as a possible extension, so expose a
+// no-op factory to avoid "does not export a valid factory function" errors.
+export default function () {}

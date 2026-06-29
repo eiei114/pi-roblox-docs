@@ -134,3 +134,8 @@ export function formatLuauGlobalMiss(query: string, suggestions: string[]): stri
   const suggestionText = suggestions.length > 0 ? ` Did you mean: ${suggestions.join(", ")}?` : "";
   return `Luau global "${query}" not found.${suggestionText}\nUse roblox_get_class / roblox_get_member / roblox_get_enum for Roblox classes, members, and enums.`;
 }
+
+// Helper module lives under /extensions for packaging convenience.
+// Pi loads every file in that directory as a possible extension, so expose a
+// no-op factory to avoid "does not export a valid factory function" errors.
+export default function () {}
