@@ -9,6 +9,15 @@ import {
   type CacheFreshnessInfo,
 } from "./cache-freshness.js";
 import {
+  buildEnumLookupIndex,
+  formatEnumLookupMiss,
+  formatEnumLookupResult,
+  formatEnumSuggestions,
+  lookupEnum,
+  suggestEnums,
+  type EnumLookupIndex,
+} from "./enum-aliases.js";
+import {
   buildLuauGlobalsIndex,
   formatLuauGlobal,
   formatLuauGlobalMiss,
@@ -17,7 +26,7 @@ import {
 } from "./luau-globals.js";
 
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox";
-const USER_AGENT = "pi-roblox-docs/0.1.0";
+const USER_AGENT = "pi-roblox-docs/0.3.0";
 const DEFAULT_LANGUAGE = "en-us";
 const MAX_OUTPUT_CHARS = 45_000;
 const DEFAULT_SEARCH_LIMIT = 15;
@@ -104,6 +113,7 @@ interface LoadedData {
   inheritanceMap: Map<string, string[]>;
   searchItems: SearchResult[];
   luauGlobals: LuauGlobalsIndex;
+  enumLookup: EnumLookupIndex;
   meta: CacheMeta;
 }
 
@@ -239,7 +249,7 @@ async function syncRobloxData(force: boolean, language: string, signal?: AbortSi
   return { ...meta, cacheDir: paths.dir, downloaded, skipped: false };
 }
 
-async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean }> {
+export async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean }> {
   const dir = getCacheDir();
   const existed = await exists(dir);
   if (existed) {
@@ -247,6 +257,25 @@ async function clearRobloxCache(): Promise<{ cacheDir: string; existed: boolean 
   }
   loadedData = undefined;
   return { cacheDir: dir, existed };
+}
+
+export function formatClearCacheMessage(result: { cacheDir: string; existed: boolean }): string {
+  const statusLine = result.existed
+    ? `Roblox docs cache cleared.\nDeleted: ${result.cacheDir}`
+    : `Roblox docs cache was already empty.\nCache path: ${result.cacheDir}`;
+  return `${statusLine}\n\nRun roblox_sync before roblox_search and other API lookups work again.`;
+}
+
+export async function inspectCacheHealth(language = DEFAULT_LANGUAGE): Promise<{
+  cacheDir: string;
+  hasApiDump: boolean;
+  hasApiDocs: boolean;
+  indexed: boolean;
+}> {
+  const paths = cachePaths(language);
+  const [hasApiDump, hasApiDocs] = await Promise.all([exists(paths.apiDump), exists(paths.apiDocs)]);
+  const data = await loadData(language);
+  return { cacheDir: paths.dir, hasApiDump, hasApiDocs, indexed: Boolean(data) };
 }
 
 async function readDevForumCache(): Promise<DevForumCacheFile> {
@@ -428,7 +457,8 @@ function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: Cac
   }
 
   const luauGlobals = buildLuauGlobalsIndex(docs);
-  const dataShell = { dump, docs, docsMap, classMap, enumMap, inheritanceMap, searchItems, luauGlobals, meta } satisfies LoadedData;
+  const enumLookup = buildEnumLookupIndex(dump.Enums ?? []);
+  const dataShell = { dump, docs, docsMap, classMap, enumMap, inheritanceMap, searchItems, luauGlobals, enumLookup, meta } satisfies LoadedData;
 
   for (const cls of dump.Classes ?? []) {
     if (!cls.Name) continue;
@@ -822,15 +852,14 @@ export default function (pi: ExtensionAPI) {
     promptSnippet: "Delete local Roblox docs cache",
     promptGuidelines: [
       "Use roblox_clear_cache when the user asks to clear Roblox docs cache or reset pi-roblox-docs local data.",
+      "roblox_clear_cache only deletes the package-owned pi-roblox-docs cache directory; it does not touch project files or other Pi caches.",
+      "After roblox_clear_cache, tell the user to run roblox_sync before search and API lookup tools work again.",
     ],
     parameters: Type.Object({}),
     async execute(_toolCallId, _params, _signal, _onUpdate, ctx) {
       const result = await clearRobloxCache();
       ctx.ui.setStatus("roblox-docs", "roblox-docs: run roblox_sync");
-      const text = result.existed
-        ? `Roblox docs cache cleared.\nDeleted: ${result.cacheDir}`
-        : `Roblox docs cache was already empty.\nCache path: ${result.cacheDir}`;
-      return toolText(text, result);
+      return toolText(formatClearCacheMessage(result), { ...result, syncRequired: true });
     },
   });
 
@@ -936,6 +965,46 @@ export default function (pi: ExtensionAPI) {
       }
       const output = formatMember(data, found.owner, params.className, found.member);
       return toolText(output, { className: found.owner.Name, memberName: found.member.Name, memberType: found.member.MemberType });
+    },
+  });
+
+  pi.registerTool({
+    name: "roblox_lookup_enum",
+    label: "Roblox Enum Lookup",
+    description: "Resolve fuzzy enum names or near-miss aliases to likely Roblox enums from local docs cache.",
+    promptSnippet: "Resolve fuzzy Roblox enum names from local cache",
+    promptGuidelines: [
+      "Use roblox_lookup_enum when the user gives a fuzzy, abbreviated, or misspelled enum name.",
+      "roblox_lookup_enum uses only the local cached enum index; it does not call web search.",
+      "Use roblox_get_enum after roblox_lookup_enum identifies the exact enum name.",
+    ],
+    parameters: Type.Object({
+      query: Type.String({ description: "Enum name, alias, or near-miss, e.g. 'easing style', 'Materail', 'KeyCode'." }),
+      limit: Type.Optional(Type.Number({ default: 8, description: "Max suggestions when there is no exact match, 1-15." })),
+    }),
+    async execute(_toolCallId, params) {
+      const data = await loadData(DEFAULT_LANGUAGE);
+      if (!data) return toolText(notSyncedMessage(), { error: "not_synced", cacheDir: getCacheDir() });
+
+      const exact = lookupEnum(data.enumLookup, params.query);
+      if (exact) {
+        const output = truncateOutput(formatEnumLookupResult(params.query, exact)).text;
+        return toolText(output, { query: params.query, match: "exact", enumName: exact.Name });
+      }
+
+      const limit = clampLimit(params.limit, 8, 15);
+      const suggestions = suggestEnums(data.enumLookup, params.query, limit);
+      if (suggestions.length === 0) {
+        const output = truncateOutput(formatEnumLookupMiss(params.query)).text;
+        return toolText(output, { query: params.query, match: "none", suggestions: [] });
+      }
+
+      const output = truncateOutput(formatEnumSuggestions(params.query, suggestions)).text;
+      return toolText(output, {
+        query: params.query,
+        match: "suggestions",
+        suggestions: suggestions.map((item) => item.name),
+      });
     },
   });
 
@@ -1049,7 +1118,7 @@ export default function (pi: ExtensionAPI) {
       }
       const result = await clearRobloxCache();
       ctx.ui.setStatus("roblox-docs", "roblox-docs: run roblox_sync");
-      ctx.ui.notify(result.existed ? `Roblox docs cache cleared: ${result.cacheDir}` : `Cache was already empty: ${result.cacheDir}`, "info");
+      ctx.ui.notify(formatClearCacheMessage(result), "info");
     },
   });
 }

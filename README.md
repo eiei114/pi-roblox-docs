@@ -21,6 +21,7 @@ MVP tools:
 - `roblox_get_class` - show one class with grouped members
 - `roblox_get_member` - show one class member
 - `roblox_get_enum` - show enum values
+- `roblox_lookup_enum` - resolve fuzzy enum names or near-miss aliases from local cache
 - `roblox_get_luau_global` - look up Luau built-ins and Roblox globals/libraries
 - `roblox_search_devforum` - search Roblox Developer Forum discussions
 - `roblox_clear_cache` - delete local cache
@@ -84,11 +85,20 @@ Then ask Roblox API questions. Examples:
 - "What does task.wait do?"
 - "How do I use math.clamp?"
 
+Enum alias lookup examples (local cache only, no web search):
+
+```text
+Call roblox_lookup_enum with query="easing style"
+Call roblox_lookup_enum with query="Materail"
+```
+
+Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled. It returns an exact enum match when possible, otherwise bounded suggestions from the cached enum index, or an explicit no-match message.
+
 ### Luau globals vs Roblox classes
 
 Use `roblox_get_luau_global` for **Luau built-ins** (`math`, `string`, `coroutine`, `print`, `pcall`) and **Roblox globals/libraries** (`task`, `typeof`, `game`, `workspace`).
 
-Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, and `roblox_get_enum` for **Roblox instance APIs** — classes like `Part`, services like `TweenService`, and enums like `EasingStyle`. Datatypes such as `Vector3` and `CFrame` stay on the class/member path, not Luau global lookup.
+Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, and `roblox_lookup_enum` for **Roblox instance APIs** — classes like `Part`, services like `TweenService`, and enums like `EasingStyle`. Use `roblox_lookup_enum` before `roblox_get_enum` when the enum name might be misspelled or incomplete. Datatypes such as `Vector3` and `CFrame` stay on the class/member path, not Luau global lookup.
 
 ## Cache
 
@@ -102,7 +112,15 @@ The extension does not write large Roblox JSON files into your project or Obsidi
 
 `roblox_health` and `/roblox:health` report cache freshness using a **7-day stale threshold** based on `metadata.json` `lastSync`. Fresh caches stay compact; stale or missing caches include a short recommendation to run `roblox_sync`.
 
-DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `/roblox:clear-cache`.
+DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `roblox_clear_cache` and `/roblox:clear-cache`.
+
+### Clearing cache
+
+Use `roblox_clear_cache` or `/roblox:clear-cache` when local sync or index data looks corrupted, you suspect stale files after manual edits, or you want a clean re-download. The tool deletes only the package-owned `pi-roblox-docs` cache directory shown above. It does not delete project files, your Obsidian vault, or caches owned by other Pi packages.
+
+After clearing, run `roblox_sync` before `roblox_search` and other API lookup tools work again. `roblox_health` reports missing cache files and `INDEX: not built (run roblox_sync first)` until you sync.
+
+You usually do **not** need to clear cache for routine Roblox API version updates; `roblox_sync` skips the download when versions already match unless you pass `force=true`.
 
 ## Security
 

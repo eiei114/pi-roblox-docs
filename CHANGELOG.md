@@ -5,14 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-## [0.1.8] - 2026-06-29
+## [0.3.1] - 2026-06-29
 
 ### Fixed
 
 - Prevented Pi from rejecting helper modules in `extensions/` by giving `cache-freshness` and `luau-globals` no-op default extension factories.
 - Added tracked `.js` helper entrypoints so runtime imports like `./cache-freshness.js` and `./luau-globals.js` resolve cleanly in packaged installs.
+
+## [0.3.0] - 2026-06-29
+
+### Added
+
+- `roblox_lookup_enum` tool for resolving fuzzy enum names, aliases, and near-miss spellings from the local docs cache.
+- `extensions/enum-aliases.ts` with deterministic enum suggestion scoring and explicit no-match messaging.
+- `tests/enum-alias.test.mjs` covering exact match, alias/near-miss suggestions, and no-match behavior.
+- README enum alias lookup examples and guidance on when to use `roblox_lookup_enum` vs `roblox_get_enum`.
+
+## [0.2.0] - 2026-06-28
+
+### Added
+
+- `roblox_clear_cache` maintenance tool output now states that `roblox_sync` is required before search and API lookups work again.
+- Exported cache helpers (`clearRobloxCache`, `formatClearCacheMessage`, `inspectCacheHealth`) for behavioral tests.
+- `tests/clear-cache.test.mjs` covers clear-after-sync and clear-when-empty flows, including post-clear health state.
+- README documents cache-clear use cases, package-owned boundaries, and when clearing is unnecessary.
+
+### Changed
+
+- `/roblox:clear-cache` confirmation flow uses the same sync-required guidance as the tool.
 
 ## [0.1.7] - 2026-06-28
 
