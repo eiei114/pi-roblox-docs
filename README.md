@@ -3,43 +3,50 @@
 [![CI](https://github.com/eiei114/pi-roblox-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-roblox-docs/actions/workflows/ci.yml)
 [![Publish](https://github.com/eiei114/pi-roblox-docs/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-roblox-docs/actions/workflows/publish.yml)
 [![npm version](https://img.shields.io/npm/v/pi-roblox-docs.svg)](https://www.npmjs.com/package/pi-roblox-docs)
+[![npm downloads](https://img.shields.io/npm/dm/pi-roblox-docs.svg)](https://www.npmjs.com/package/pi-roblox-docs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Pi package](https://img.shields.io/badge/pi-package-purple.svg)](https://pi.dev/packages)
+[![Trusted Publishing](https://img.shields.io/badge/npm-Trusted%20Publishing-blue.svg)](docs/release.md)
 
-Pi native Roblox documentation tools.
+> Pi-native Roblox API and Luau docs lookup from a local cache — no resident MCP server or background daemon.
 
-This package does **not** start an MCP server, `uvx`, or a background Node daemon. It runs inside Pi's TypeScript extension runtime and registers Roblox documentation tools directly with `pi.registerTool()`.
+## What this is
 
-For maintenance direction, phased goals, and the `pi-extension-template` compliance checklist, see [`ROADMAP.md`](ROADMAP.md).
+`pi-roblox-docs` registers Roblox documentation tools directly inside Pi's TypeScript extension runtime with `pi.registerTool()`.
 
-## Tools
+- No MCP server, `uvx`, or background Node daemon
+- Local cache from public Roblox API dumps for fast offline lookup
+- Typed tools for classes, members, enums, Luau globals, and DevForum search
+- Slash commands for sync, health, DevForum search, and cache maintenance
 
-MVP tools:
+For maintenance direction and phased goals, see [`ROADMAP.md`](ROADMAP.md).
 
-- `roblox_sync` - download/update local Roblox API cache
-- `roblox_health` - show cache/index status and whether the local cache is fresh or stale
-- `roblox_search` - search classes, members, and enums
-- `roblox_get_class` - show one class with grouped members
-- `roblox_get_member` - show one class member
-- `roblox_get_enum` - show enum values
-- `roblox_lookup_enum` - resolve fuzzy enum names or near-miss aliases from local cache
-- `roblox_get_luau_global` - look up Luau built-ins and Roblox globals/libraries
-- `roblox_search_devforum` - search Roblox Developer Forum discussions
-- `roblox_clear_cache` - delete local cache
+## Features
 
-## Slash commands
+**Tools**
 
-- `/roblox:sync` - sync local Roblox docs cache
-- `/roblox:sync --force` - redownload even when versions match
-- `/roblox:health` - show cache/index status and cache freshness
-- `/roblox:devforum <query>` - search DevForum discussions
-- `/roblox:clear-cache` - delete local cache after confirmation
+| Tool | Purpose |
+|---|---|
+| `roblox_sync` | Download or update the local Roblox API cache |
+| `roblox_health` | Show cache/index status and freshness |
+| `roblox_search` | Search classes, members, and enums |
+| `roblox_get_class` | Show one class with grouped members |
+| `roblox_get_member` | Show one class member |
+| `roblox_get_enum` | Show enum values |
+| `roblox_lookup_enum` | Resolve fuzzy enum names or near-miss aliases |
+| `roblox_get_luau_global` | Look up Luau built-ins and Roblox globals/libraries |
+| `roblox_search_devforum` | Search Roblox Developer Forum discussions |
+| `roblox_clear_cache` | Delete the package-owned local cache |
 
-## Data sources
+**Commands**
 
-Public sources used by the extension:
-
-- `MaximumADHD/Roblox-Client-Tracker` for `API-Dump.json`, `api-docs/en-us.json`, and `version.txt`
-- Roblox Creator Docs links for output references
+| Command | Purpose |
+|---|---|
+| `/roblox:sync` | Sync local Roblox docs cache |
+| `/roblox:sync --force` | Redownload even when versions match |
+| `/roblox:health` | Show cache/index status and freshness |
+| `/roblox:devforum <query>` | Search DevForum discussions |
+| `/roblox:clear-cache` | Delete local cache after confirmation |
 
 ## Install
 
@@ -58,8 +65,50 @@ pi install git:github.com/eiei114/pi-roblox-docs
 Local development:
 
 ```bash
+git clone https://github.com/eiei114/pi-roblox-docs.git
+cd pi-roblox-docs
+npm ci
 pi -e ./extensions/roblox-docs.ts
 ```
+
+## Quick start
+
+1. Install the package (see above).
+2. Sync the local cache:
+
+   ```text
+   /roblox:sync
+   ```
+
+   or call `roblox_sync` with `force=false`.
+3. Ask Roblox API questions in Pi, for example:
+
+   - "How do I use TweenService?"
+   - "What enum values does EasingStyle have?"
+   - "What does `task.wait` do?"
+
+## Usage summary
+
+After the first sync, use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, and `roblox_lookup_enum` for Roblox instance APIs. Use `roblox_get_luau_global` for Luau built-ins and Roblox globals such as `math`, `task`, and `typeof`.
+
+`roblox_health` and `/roblox:health` report cache freshness with a **7-day stale threshold**. Run `roblox_sync` when the cache is stale or missing.
+
+For detailed workflows, cache policy, Luau-vs-class guidance, and tool examples, see:
+
+- [`docs/usage.md`](docs/usage.md)
+- [`docs/examples.md`](docs/examples.md)
+
+## Package contents
+
+| Path | Purpose |
+|---|---|
+| `extensions/` | Pi TypeScript extension entrypoint and helper modules |
+| `docs/` | Optional supporting docs (usage, examples, release) |
+| `tests/` | Behavioral and smoke tests |
+| `README.md` | GitHub/npm entrypoint |
+| `CHANGELOG.md` | Release history |
+| `SECURITY.md` | Vulnerability reporting |
+| `ROADMAP.md` | Maintenance direction and phased goals |
 
 ## Development
 
@@ -68,67 +117,39 @@ npm ci
 npm run check
 ```
 
-## Usage
+## Release
 
-First sync data:
+This package is configured for npm Trusted Publishing. No `NPM_TOKEN` is stored in the repo.
 
-```text
-Call roblox_sync with force=false
+```bash
+npm version patch
+git push
 ```
 
-Then ask Roblox API questions. Examples:
+See [`docs/release.md`](docs/release.md) for Trusted Publishing setup and workflow details.
 
-- "How do I use TweenService?"
-- "Is BodyPosition deprecated?"
-- "What enum values does EasingStyle have?"
-- "Find APIs for player character spawning."
-- "What does task.wait do?"
-- "How do I use math.clamp?"
+## Docs
 
-Enum alias lookup examples (local cache only, no web search):
+`docs/` is optional supporting documentation, not a fixed template doc set. README stays the GitHub/npm entrypoint.
 
-```text
-Call roblox_lookup_enum with query="easing style"
-Call roblox_lookup_enum with query="Materail"
-```
-
-Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled. It returns an exact enum match when possible, otherwise bounded suggestions from the cached enum index, or an explicit no-match message.
-
-### Luau globals vs Roblox classes
-
-Use `roblox_get_luau_global` for **Luau built-ins** (`math`, `string`, `coroutine`, `print`, `pcall`) and **Roblox globals/libraries** (`task`, `typeof`, `game`, `workspace`).
-
-Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, and `roblox_lookup_enum` for **Roblox instance APIs** — classes like `Part`, services like `TweenService`, and enums like `EasingStyle`. Use `roblox_lookup_enum` before `roblox_get_enum` when the enum name might be misspelled or incomplete. Datatypes such as `Vector3` and `CFrame` stay on the class/member path, not Luau global lookup.
-
-## Cache
-
-Cache location is OS-specific:
-
-- Windows: `%LOCALAPPDATA%/pi-roblox-docs`
-- macOS: `~/Library/Caches/pi-roblox-docs`
-- Linux: `~/.cache/pi-roblox-docs`
-
-The extension does not write large Roblox JSON files into your project or Obsidian vault.
-
-`roblox_health` and `/roblox:health` report cache freshness using a **7-day stale threshold** based on `metadata.json` `lastSync`. Fresh caches stay compact; stale or missing caches include a short recommendation to run `roblox_sync`.
-
-DevForum search results are cached for 1 hour in `devforum-cache.json` and are deleted by `roblox_clear_cache` and `/roblox:clear-cache`.
-
-### Clearing cache
-
-Use `roblox_clear_cache` or `/roblox:clear-cache` when local sync or index data looks corrupted, you suspect stale files after manual edits, or you want a clean re-download. The tool deletes only the package-owned `pi-roblox-docs` cache directory shown above. It does not delete project files, your Obsidian vault, or caches owned by other Pi packages.
-
-After clearing, run `roblox_sync` before `roblox_search` and other API lookup tools work again. `roblox_health` reports missing cache files and `INDEX: not built (run roblox_sync first)` until you sync.
-
-You usually do **not** need to clear cache for routine Roblox API version updates; `roblox_sync` skips the download when versions already match unless you pass `force=true`.
+- [`docs/usage.md`](docs/usage.md) — cache policy, data sources, Luau vs class lookup, troubleshooting
+- [`docs/examples.md`](docs/examples.md) — tool and command examples
+- [`docs/release.md`](docs/release.md) — Trusted Publishing and release workflow
 
 ## Security
 
-Pi packages can execute code with your local permissions. Review extensions before installing third-party packages.
+Pi packages can execute code with your local permissions. This extension downloads public Roblox API dumps, may query the Roblox Developer Forum, and writes cache files under an OS-specific package-owned directory. Review extensions before installing third-party packages.
 
 For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
 
-## Release
+## Links
 
-Version history and release notes are in [`CHANGELOG.md`](CHANGELOG.md). Roadmap and maintenance direction are in [`ROADMAP.md`](ROADMAP.md).
+- npm: https://www.npmjs.com/package/pi-roblox-docs
+- GitHub: https://github.com/eiei114/pi-roblox-docs
+- Issues: https://github.com/eiei114/pi-roblox-docs/issues
+- Pi packages: https://pi.dev/packages
+- Data source: https://github.com/MaximumADHD/Roblox-Client-Tracker
 
+## License
+
+MIT
