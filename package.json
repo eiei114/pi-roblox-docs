@@ -1,6 +1,6 @@
 {
   "name": "pi-roblox-docs",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Pi native Roblox documentation tools without a background MCP server.",
   "type": "module",
   "keywords": [
@@ -21,12 +21,13 @@
   },
   "homepage": "https://github.com/eiei114/pi-roblox-docs#readme",
   "files": [
+    "extensions/",
+    "docs/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
     "SECURITY.md",
-    "ROADMAP.md",
-    "extensions"
+    "ROADMAP.md"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
