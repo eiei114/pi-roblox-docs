@@ -41,9 +41,9 @@ After syncing, ask natural-language questions in Pi or call tools directly:
 
 ```text
 roblox_search({ query: "TweenService" })
-roblox_get_class({ name: "TweenService" })
+roblox_get_class({ className: "TweenService" })
 roblox_get_member({ className: "TweenService", memberName: "Create" })
-roblox_get_enum({ name: "EasingStyle" })
+roblox_get_enum({ enumName: "EasingStyle" })
 ```
 
 Natural-language prompts that work well:
