@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Corrected Roblox tool argument names in `docs/examples.md` (`className`, `enumName`).
+- Corrected Roblox tool argument names in `docs/examples.md` (`className`, `memberName`, `enumName`).
 - Aligned README Package contents table with the npm `files` list (`LICENSE` added, source-only `tests/` removed).
 
 ## [0.3.3] - 2026-07-01
