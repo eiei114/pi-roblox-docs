@@ -104,8 +104,8 @@ For detailed workflows, cache policy, Luau-vs-class guidance, and tool examples,
 |---|---|
 | `extensions/` | Pi TypeScript extension entrypoint and helper modules |
 | `docs/` | Optional supporting docs (usage, examples, release) |
-| `tests/` | Behavioral and smoke tests |
 | `README.md` | GitHub/npm entrypoint |
+| `LICENSE` | MIT license |
 | `CHANGELOG.md` | Release history |
 | `SECURITY.md` | Vulnerability reporting |
 | `ROADMAP.md` | Maintenance direction and phased goals |
