@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.5] - 2026-07-02
+
+### Fixed
+
+- Display Luau global overload signatures, including `table.insert`, instead of returning empty output for overload-only entries.
+- Document Luau global lookup confusion boundaries for case-insensitive `script`/`Script`, datatypes, and Roblox classes.
+
 ## [0.3.4] - 2026-07-01
 
 ### Fixed
