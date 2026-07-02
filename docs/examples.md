@@ -69,12 +69,24 @@ Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled
 ```text
 roblox_get_luau_global({ name: "task.wait" })
 roblox_get_luau_global({ name: "math.clamp" })
+roblox_get_luau_global({ name: "table.insert" })
+roblox_get_luau_global({ name: "script" })
+roblox_get_luau_global({ name: "string.split" })
 ```
 
 Example prompts:
 
 - "What does `task.wait` do?"
 - "How do I use `math.clamp`?"
+- "What are the overloads for `table.insert`?"
+- "What does the `script` global refer to?"
+- "How do I split a string?"
+
+### What not to use Luau globals for
+
+Lookups for **Roblox instance classes** (`Part`, `Player`), **services** (`TweenService`, `DataStoreService`), and **enums** (`EasingStyle`, `Material`) return miss results. Use `roblox_search`, `roblox_get_class`, or `roblox_get_enum` for those.
+
+**Datatypes** (`Vector3`, `CFrame`, `Color3`) also return miss results from Luau global lookup. Use `roblox_search({ query: "Vector3" })` to find datatype documentation.
 
 ## DevForum search
 

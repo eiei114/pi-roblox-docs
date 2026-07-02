@@ -22,6 +22,11 @@
     "learn_more_link": "https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals#typeof",
     "code_sample": ""
   },
+  "@roblox/global/script": {
+    "documentation": "A reference to the LuaSourceContainer object (Script, LocalScript, or ModuleScript) that is executing this code.",
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/globals/RobloxGlobals#script",
+    "code_sample": ""
+  },
   "@roblox/global/task": {
     "documentation": "Allows for functions and threads to be coordinated with the engine's scheduler.",
     "keys": {
@@ -29,6 +34,24 @@
     },
     "learn_more_link": "https://create.roblox.com/docs/reference/engine/libraries/task",
     "code_sample": ""
+  },
+  "@luau/global/table.insert": {
+    "overloads": {
+      "(table, number, Variant) -> ()": "@luau/global/table.insert/overload/(table, number, Variant) -> ()",
+      "(table, Variant) -> ()": "@luau/global/table.insert/overload/(table, Variant) -> ()"
+    },
+    "learn_more_link": "https://create.roblox.com/docs/reference/engine/libraries/table#insert",
+    "code_sample": ""
+  },
+  "@luau/global/table.insert/overload/(table, number, Variant) -> ()": {
+    "documentation": "Inserts a value at a specific position in a table.",
+    "params": [{ "name": "table" }, { "name": "position" }, { "name": "value" }],
+    "returns": []
+  },
+  "@luau/global/table.insert/overload/(table, Variant) -> ()": {
+    "documentation": "Inserts a value at the end of a table.",
+    "params": [{ "name": "table" }, { "name": "value" }],
+    "returns": []
   },
   "@roblox/global/DateTime": {
     "documentation": "A data type that represents a moment in time.",

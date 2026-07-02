@@ -21,6 +21,18 @@ Use `roblox_get_luau_global` for **Luau built-ins** (`math`, `string`, `coroutin
 
 Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, and `roblox_lookup_enum` for **Roblox instance APIs** — classes like `Part`, services like `TweenService`, and enums like `EasingStyle`. Use `roblox_lookup_enum` before `roblox_get_enum` when the enum name might be misspelled or incomplete. Datatypes such as `Vector3` and `CFrame` stay on the class/member path, not Luau global lookup.
 
+### Known confusion boundaries
+
+Case-insensitive matching means a capitalized query like `Script` finds the `script` **global** (a reference to the current script's `LuaSourceContainer`), not the `Script` **class** (an Instance type). When the result looks different from what you expected, try `roblox_search` or `roblox_get_class` instead.
+
+| Query | What happens | Right tool |
+|---|---|---|
+| `Script` | `roblox_get_luau_global` returns the `script` **global** (current script reference), not the `Script` **class** | `roblox_get_class({ className: "Script" })` |
+| `Vector3` / `CFrame` / `Color3` | `roblox_get_luau_global` returns "not found" (datatypes are filtered out) | `roblox_search({ query: "Vector3" })` returns the datatype |
+| `Instance` | `roblox_get_luau_global` returns "not found" | `roblox_search({ query: "Instance" })` returns the datatype |
+
+**Tip**: If `roblox_get_luau_global` returns an unexpected result or "not found", use `roblox_search({ query: "..." })` which searches the full Roblox API index including classes, members, enums, and datatypes.
+
 ## Enum alias lookup
 
 Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled. It returns an exact enum match when possible, otherwise bounded suggestions from the cached enum index, or an explicit no-match message.

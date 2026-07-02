@@ -3,6 +3,7 @@ export interface LuauGlobalDocEntry {
   keys?: Record<string, string>;
   params?: Array<{ name?: string }>;
   returns?: string[];
+  overloads?: Record<string, string>;
   learn_more_link?: string;
 }
 
@@ -111,6 +112,17 @@ export function formatLuauGlobal(item: LuauGlobalItem, options: { memberLimit?: 
     lines.push(`  ${shown.join(", ")}`);
     if (members.length > shown.length) {
       lines.push(`  ... ${members.length - shown.length} more. Increase memberLimit for more.`);
+    }
+  } else if (entry.overloads && typeof entry.overloads === "object") {
+    const overloadNames = Object.keys(entry.overloads);
+    if (overloadNames.length > 0) {
+      lines.push("", `OVERLOADS (${overloadNames.length}):`);
+      for (const sig of overloadNames.slice(0, memberLimit)) {
+        lines.push(`  ${name}${sig}`);
+      }
+      if (overloadNames.length > memberLimit) {
+        lines.push(`  ... ${overloadNames.length - memberLimit} more overloads.`);
+      }
     }
   } else {
     const params = (entry.params ?? []).map((param) => param.name ?? "arg").join(", ");
