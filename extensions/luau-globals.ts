@@ -112,6 +112,24 @@ export function formatLuauGlobal(item: LuauGlobalItem, options: { memberLimit?: 
     if (members.length > shown.length) {
       lines.push(`  ... ${members.length - shown.length} more. Increase memberLimit for more.`);
     }
+  } else if (entry.overloads && typeof entry.overloads === "object") {
+    const overloadNames = Object.keys(entry.overloads);
+    if (overloadNames.length > 0) {
+      lines.push("", `OVERLOADS (${overloadNames.length}):`);
+      for (const sig of overloadNames.slice(0, memberLimit)) {
+        lines.push(`  ${name}${sig}`);
+      }
+      if (overloadNames.length > memberLimit) {
+        lines.push(`  ... ${overloadNames.length - memberLimit} more overloads.`);
+      }
+    }
+    // Try to find docs from the first overload
+    if (!entry.documentation && overloadNames.length > 0) {
+      const firstOverloadKey = entry.overloads[overloadNames[0]];
+      if (typeof firstOverloadKey === "string" && entry.learn_more_link) {
+        // No direct doc, but we have the link
+      }
+    }
   } else {
     const params = (entry.params ?? []).map((param) => param.name ?? "arg").join(", ");
     if (Array.isArray(entry.params)) {
