@@ -28,10 +28,10 @@ Case-insensitive matching means a capitalized query like `Script` finds the `scr
 | Query | What happens | Right tool |
 |---|---|---|
 | `Script` | `roblox_get_luau_global` returns the `script` **global** (current script reference), not the `Script` **class** | `roblox_get_class({ className: "Script" })` |
-| `Vector3` / `CFrame` / `Color3` | `roblox_get_luau_global` returns "not found" (datatypes are filtered out) | `roblox_search({ query: "Vector3" })` returns the datatype |
-| `Instance` | `roblox_get_luau_global` returns "not found" | `roblox_search({ query: "Instance" })` returns the datatype |
+| `Vector3` / `CFrame` / `Color3` | `roblox_get_luau_global` returns "not found" (datatypes are filtered out) | `roblox_search({ query: "Vector3" })` to find related API references, then `roblox_get_member` for member details |
+| `Instance` | `roblox_get_luau_global` returns "not found" | `roblox_get_class({ className: "Instance" })` |
 
-**Tip**: If `roblox_get_luau_global` returns an unexpected result or "not found", use `roblox_search({ query: "..." })` which searches the full Roblox API index including classes, members, enums, and datatypes.
+**Tip**: If `roblox_get_luau_global` returns an unexpected result or "not found", use `roblox_search({ query: "..." })` which searches classes, members, and enums in the local Roblox API index.
 
 ## Enum alias lookup
 
