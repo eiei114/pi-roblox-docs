@@ -3,6 +3,7 @@ export interface LuauGlobalDocEntry {
   keys?: Record<string, string>;
   params?: Array<{ name?: string }>;
   returns?: string[];
+  overloads?: Record<string, string>;
   learn_more_link?: string;
 }
 
@@ -121,13 +122,6 @@ export function formatLuauGlobal(item: LuauGlobalItem, options: { memberLimit?: 
       }
       if (overloadNames.length > memberLimit) {
         lines.push(`  ... ${overloadNames.length - memberLimit} more overloads.`);
-      }
-    }
-    // Try to find docs from the first overload
-    if (!entry.documentation && overloadNames.length > 0) {
-      const firstOverloadKey = entry.overloads[overloadNames[0]];
-      if (typeof firstOverloadKey === "string" && entry.learn_more_link) {
-        // No direct doc, but we have the link
       }
     }
   } else {

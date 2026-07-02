@@ -84,7 +84,9 @@ Example prompts:
 
 ### What not to use Luau globals for
 
-Lookups for **Roblox instance classes** (`Part`, `Script`, `Player`), **services** (`TweenService`, `DataStoreService`), and **datatypes** (`Vector3`, `CFrame`, `Color3`) return miss results. Use `roblox_search` or `roblox_get_class` for those instead.
+Lookups for **Roblox instance classes** (`Part`, `Player`), **services** (`TweenService`, `DataStoreService`), and **enums** (`EasingStyle`, `Material`) return miss results. Use `roblox_search`, `roblox_get_class`, or `roblox_get_enum` for those.
+
+**Datatypes** (`Vector3`, `CFrame`, `Color3`) also return miss results from Luau global lookup. Use `roblox_search({ query: "Vector3" })` to find datatype documentation.
 
 ## DevForum search
 

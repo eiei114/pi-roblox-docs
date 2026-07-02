@@ -25,14 +25,13 @@ Use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`,
 
 Case-insensitive matching means a capitalized query like `Script` finds the `script` **global** (a reference to the current script's `LuaSourceContainer`), not the `Script` **class** (an Instance type). When the result looks different from what you expected, try `roblox_search` or `roblox_get_class` instead.
 
-| Query | Tool | What you get | What you might have wanted |
-|---|---|---|---|
-| `Script` | `roblox_get_luau_global` | The `script` global (current script reference) | The `Script` class (Instance type) |
-| `Instance` | `roblox_get_luau_global` | Not found (datatype, filtered) | The `Instance` class or the `Instance` datatype |
-| `Vector3` | `roblox_get_luau_global` | Not found (datatype, filtered) | The `Vector3` datatype via `roblox_get_member` |
-| `script` | `roblox_get_luau_global` | The `script` global ✓ | The `Script` class (wrong tool) |
+| Query | What happens | Right tool |
+|---|---|---|
+| `Script` | `roblox_get_luau_global` returns the `script` **global** (current script reference), not the `Script` **class** | `roblox_get_class({ className: "Script" })` |
+| `Vector3` / `CFrame` / `Color3` | `roblox_get_luau_global` returns "not found" (datatypes are filtered out) | `roblox_search({ query: "Vector3" })` returns the datatype |
+| `Instance` | `roblox_get_luau_global` returns "not found" | `roblox_search({ query: "Instance" })` returns the datatype |
 
-**Tip**: If `roblox_get_luau_global` returns an unexpected result, use `roblox_search({ query: "..." })` or `roblox_get_class({ className: "..." })` which searches the full Roblox API class/enum index.
+**Tip**: If `roblox_get_luau_global` returns an unexpected result or "not found", use `roblox_search({ query: "..." })` which searches the full Roblox API index including classes, members, enums, and datatypes.
 
 ## Enum alias lookup
 
