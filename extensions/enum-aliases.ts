@@ -23,12 +23,27 @@ function normalizeQuery(query: string): string {
   return query.trim().toLowerCase().replace(/[\s_-]+/g, "");
 }
 
+const TOKEN_STOP_WORDS = new Set(["a", "an", "the", "not", "no", "for", "and", "or", "to", "of", "in", "on", "at", "by"]);
+
 function splitTokens(text: string): string[] {
   return text
     .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((token) => token.length >= 2);
+}
+
+function significantQueryTokens(query: string): string[] {
+  return splitTokens(query).filter((token) => !TOKEN_STOP_WORDS.has(token));
+}
+
+function enumWords(enumName: string): string[] {
+  return enumName
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .split(/[^a-zA-Z0-9]+/)
+    .filter((word) => word.length >= 2);
 }
 
 function levenshtein(a: string, b: string, maxDistance: number): number | null {
@@ -78,39 +93,83 @@ export function lookupEnum(index: EnumLookupIndex, query: string): ApiEnum | und
   return index.byName.get(query.trim().toLowerCase()) ?? index.byName.get(normalizeQuery(query));
 }
 
+function wordPrefixScore(word: string, queryLower: string): number | null {
+  const wordLower = word.toLowerCase();
+  if (wordLower === queryLower) return 200;
+  if (!wordLower.startsWith(queryLower) || queryLower.length < 3) return null;
+
+  const remainder = word.slice(queryLower.length);
+  if (remainder.length === 0) return 200;
+  // Reject when the query continues into the same camelCase word (e.g. mode -> Model).
+  if (remainder[0] === remainder[0].toLowerCase()) return null;
+
+  const extra = wordLower.length - queryLower.length;
+  if (extra === 1) return 110;
+  return 90 - extra * 10;
+}
+
+function wordContainsScore(word: string, queryLower: string): number | null {
+  const wordLower = word.toLowerCase();
+  if (wordLower === queryLower) return 200;
+  if (wordLower.includes(queryLower) && queryLower.length >= 4) return 80;
+  return null;
+}
+
 export function scoreEnumMatch(enumName: string, query: string): { score: number; matchKind: EnumSuggestion["matchKind"] } | null {
   const queryNormalized = normalizeQuery(query);
   if (!queryNormalized) return null;
 
+  const queryLower = query.trim().toLowerCase();
   const nameLower = enumName.toLowerCase();
   const nameNormalized = normalizeQuery(enumName);
+  const words = enumWords(enumName);
+  const queryTokens = significantQueryTokens(query);
+  if (queryTokens.length === 0) return null;
 
-  if (nameNormalized === queryNormalized || nameLower === query.trim().toLowerCase()) {
+  if (nameNormalized === queryNormalized || nameLower === queryLower) {
     return { score: 300, matchKind: "exact" };
   }
-  if (nameNormalized.startsWith(queryNormalized) || nameLower.startsWith(query.trim().toLowerCase())) {
-    return { score: 120, matchKind: "prefix" };
-  }
-  if (nameNormalized.includes(queryNormalized) || nameLower.includes(query.trim().toLowerCase())) {
-    return { score: 80, matchKind: "contains" };
-  }
 
-  const queryTokens = splitTokens(query);
-  const nameTokens = splitTokens(enumName);
-  if (queryTokens.length > 0) {
-    const matchedTokens = queryTokens.filter((token) => nameTokens.some((nameToken) => nameToken.startsWith(token) || nameToken.includes(token)));
+  if (queryTokens.length >= 2) {
+    const matchedTokens = queryTokens.filter((token) =>
+      words.some((word) => word.toLowerCase() === token || word.toLowerCase().startsWith(token)),
+    );
     if (matchedTokens.length === queryTokens.length) {
-      return { score: 60 + matchedTokens.length * 10, matchKind: "token" };
+      const firstWordBoost = words[0] && matchedTokens.includes(words[0].toLowerCase()) ? 20 : 0;
+      const compactBoost = words.length <= 3 ? 15 : 0;
+      return { score: 140 + matchedTokens.length * 25 + firstWordBoost + compactBoost, matchKind: "token" };
     }
     if (matchedTokens.length > 0) {
-      return { score: 30 + matchedTokens.length * 8, matchKind: "token" };
+      return { score: 35 + matchedTokens.length * 12, matchKind: "token" };
     }
+    return null;
   }
 
-  if (queryNormalized.length >= 4) {
-    const distance = levenshtein(queryNormalized, nameNormalized, 2);
+  const matchQuery = queryTokens.length === 1 ? queryTokens[0] : queryLower;
+
+  let best: { score: number; matchKind: EnumSuggestion["matchKind"] } | null = null;
+  const consider = (score: number, matchKind: EnumSuggestion["matchKind"], wordIndex: number) => {
+    const firstWordBoost = wordIndex === 0 ? 25 : 0;
+    const compactBoost = words.length <= 2 ? 15 : 0;
+    const adjusted = score + firstWordBoost + compactBoost;
+    if (!best || adjusted > best.score) best = { score: adjusted, matchKind };
+  };
+
+  for (let index = 0; index < words.length; index++) {
+    const prefixScore = wordPrefixScore(words[index], matchQuery);
+    if (prefixScore !== null) consider(prefixScore, "prefix", index);
+
+    const containsScore = wordContainsScore(words[index], matchQuery);
+    if (containsScore !== null) consider(containsScore, "contains", index);
+  }
+
+  if (best) return best;
+
+  if (queryNormalized.length >= 5) {
+    const maxDistance = queryNormalized.length >= 7 ? 2 : 1;
+    const distance = levenshtein(queryNormalized, nameNormalized, maxDistance);
     if (distance !== null) {
-      return { score: distance === 1 ? 50 : 25, matchKind: "near" };
+      return { score: distance === 1 ? 50 : 30, matchKind: "near" };
     }
   }
 
@@ -126,9 +185,13 @@ export function suggestEnums(index: EnumLookupIndex, query: string, limit = 8): 
     .filter((item): item is EnumSuggestion => item !== null)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 
+  const topScore = scored[0]?.score ?? 0;
+  const minScore =
+    scored.length > 1 ? Math.min(topScore, Math.max(35, Math.floor(topScore * 0.55))) : 0;
   const seen = new Set<string>();
   const results: EnumSuggestion[] = [];
   for (const item of scored) {
+    if (item.score < minScore) break;
     if (seen.has(item.name)) continue;
     seen.add(item.name);
     results.push(item);

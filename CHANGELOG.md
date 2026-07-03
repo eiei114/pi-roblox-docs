@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2026-07-03
+
+### Fixed
+
+- Tighten `roblox_lookup_enum` suggestion ranking after dogfood: camelCase word-boundary matching, multi-word token boosts, stop-word filtering, and relative score cutoffs to reduce noisy cross-enum suggestions.
+- Reject `mode`-style false prefixes inside longer words such as `ModelLevelOfDetail`.
+
+### Changed
+
+- Document enum lookup tips for multi-word queries and when to fall back to `roblox_search` for generic short queries.
+
 ## [0.3.6] - 2026-07-02
 
 ### Fixed
