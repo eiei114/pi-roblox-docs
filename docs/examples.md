@@ -60,9 +60,11 @@ Local cache only — no web search:
 ```text
 roblox_lookup_enum({ query: "easing style" })
 roblox_lookup_enum({ query: "Materail" })
+roblox_lookup_enum({ query: "humanoid state" })
+roblox_lookup_enum({ query: "render fidelity" })
 ```
 
-Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled.
+Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled. Multi-word queries recover better than very generic single words like `type` or `state`; use `roblox_search` when you are browsing broadly.
 
 ## Luau globals
 

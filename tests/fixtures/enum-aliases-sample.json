@@ -19,5 +19,40 @@
       { "Name": "A", "Value": 65 },
       { "Name": "Space", "Value": 32 }
     ]
+  },
+  {
+    "Name": "HumanoidStateType",
+    "Items": [
+      { "Name": "Running", "Value": 0 },
+      { "Name": "Jumping", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "ControlMode",
+    "Items": [
+      { "Name": "Classic", "Value": 0 },
+      { "Name": "MouseLock", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "ModelLevelOfDetail",
+    "Items": [
+      { "Name": "Disabled", "Value": 0 },
+      { "Name": "Enabled", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "SortDirection",
+    "Items": [
+      { "Name": "Ascending", "Value": 0 },
+      { "Name": "Descending", "Value": 1 }
+    ]
+  },
+  {
+    "Name": "Font",
+    "Items": [
+      { "Name": "Legacy", "Value": 0 },
+      { "Name": "Gotham", "Value": 1 }
+    ]
   }
 ]

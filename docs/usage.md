@@ -37,6 +37,12 @@ Case-insensitive matching means a capitalized query like `Script` finds the `scr
 
 Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled. It returns an exact enum match when possible, otherwise bounded suggestions from the cached enum index, or an explicit no-match message.
 
+**Tips for better results:**
+
+- Prefer multi-word queries when you know part of the enum name (`humanoid state`, `render fidelity`, `easing style`).
+- Very short or generic single-word queries (`type`, `state`, `mode`) may return several plausible enums; narrow the query or use `roblox_search` when you are exploring broadly.
+- After `roblox_lookup_enum` identifies the exact enum name, call `roblox_get_enum` for the full value list.
+
 ## Cache
 
 Cache location is OS-specific:
