@@ -64,6 +64,19 @@ test("suggestEnums does not treat mode as a prefix of Model enums", () => {
   assert.ok(!suggestions.includes("ModelLevelOfDetail"));
 });
 
+test("suggestEnums uses significant token after stop-word filtering", () => {
+  const suggestions = suggestEnums(index, "the mode", 5).map((item) => item.name);
+  assert.ok(suggestions.includes("ControlMode"));
+  assert.ok(!suggestions.includes("ModelLevelOfDetail"));
+});
+
+test("suggestEnums keeps the top match when relative cutoff would exceed its score", () => {
+  const suggestions = suggestEnums(index, "abcdefg0", 5);
+  assert.ok(suggestions.length > 0);
+  assert.ok(suggestions.every((item) => item.score >= 30));
+  assert.ok(suggestions.some((item) => item.name === "ABCDEFGHI"));
+});
+
 test("suggestEnums avoids weak near matches for short unrelated queries", () => {
   const suggestions = suggestEnums(index, "sort", 5).map((item) => item.name);
   assert.ok(suggestions.includes("SortDirection"));

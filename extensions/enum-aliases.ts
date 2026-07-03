@@ -124,6 +124,7 @@ export function scoreEnumMatch(enumName: string, query: string): { score: number
   const nameNormalized = normalizeQuery(enumName);
   const words = enumWords(enumName);
   const queryTokens = significantQueryTokens(query);
+  if (queryTokens.length === 0) return null;
 
   if (nameNormalized === queryNormalized || nameLower === queryLower) {
     return { score: 300, matchKind: "exact" };
@@ -144,6 +145,8 @@ export function scoreEnumMatch(enumName: string, query: string): { score: number
     return null;
   }
 
+  const matchQuery = queryTokens.length === 1 ? queryTokens[0] : queryLower;
+
   let best: { score: number; matchKind: EnumSuggestion["matchKind"] } | null = null;
   const consider = (score: number, matchKind: EnumSuggestion["matchKind"], wordIndex: number) => {
     const firstWordBoost = wordIndex === 0 ? 25 : 0;
@@ -153,10 +156,10 @@ export function scoreEnumMatch(enumName: string, query: string): { score: number
   };
 
   for (let index = 0; index < words.length; index++) {
-    const prefixScore = wordPrefixScore(words[index], queryLower);
+    const prefixScore = wordPrefixScore(words[index], matchQuery);
     if (prefixScore !== null) consider(prefixScore, "prefix", index);
 
-    const containsScore = wordContainsScore(words[index], queryLower);
+    const containsScore = wordContainsScore(words[index], matchQuery);
     if (containsScore !== null) consider(containsScore, "contains", index);
   }
 
@@ -183,7 +186,8 @@ export function suggestEnums(index: EnumLookupIndex, query: string, limit = 8): 
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 
   const topScore = scored[0]?.score ?? 0;
-  const minScore = scored.length > 1 ? Math.max(35, Math.floor(topScore * 0.55)) : 0;
+  const minScore =
+    scored.length > 1 ? Math.min(topScore, Math.max(35, Math.floor(topScore * 0.55))) : 0;
   const seen = new Set<string>();
   const results: EnumSuggestion[] = [];
   for (const item of scored) {
