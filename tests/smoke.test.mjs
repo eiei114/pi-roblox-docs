@@ -34,3 +34,22 @@ test("release workflow hands off to npm publish", () => {
   assert.match(publishWorkflow, /workflow_dispatch:/);
   assert.match(publishWorkflow, /npm publish --access public/);
 });
+
+const pinnedCheckout = "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5";
+const pinnedSetupNode = "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020";
+
+for (const [name, workflow] of [
+  ["ci", ciWorkflow],
+  ["auto-release", autoReleaseWorkflow],
+  ["publish", publishWorkflow],
+]) {
+  test(`${name} workflow pins actions/checkout to the same commit as CI`, () => {
+    assert.match(workflow, new RegExp(pinnedCheckout));
+    assert.doesNotMatch(workflow, /actions\/checkout@v\d+/);
+  });
+}
+
+test("publish workflow pins actions/setup-node to the same commit as CI", () => {
+  assert.match(publishWorkflow, new RegExp(pinnedSetupNode));
+  assert.doesNotMatch(publishWorkflow, /actions\/setup-node@v\d+/);
+});
