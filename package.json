@@ -1,6 +1,6 @@
 {
   "name": "pi-roblox-docs",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Pi native Roblox documentation tools without a background MCP server.",
   "type": "module",
   "keywords": [
