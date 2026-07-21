@@ -3,9 +3,27 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const extensionSource = await readFile(new URL("../extensions/roblox-docs.ts", import.meta.url), "utf8");
 const autoReleaseWorkflow = await readFile(new URL("../.github/workflows/auto-release.yml", import.meta.url), "utf8");
 const publishWorkflow = await readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8");
 const ciWorkflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+
+function extractRegisteredTools(source) {
+  return [...source.matchAll(/pi\.registerTool\(\{\s*\n\s*name:\s*"([^"]+)"/g)].map((match) => match[1]);
+}
+
+function extractRegisteredCommands(source) {
+  return [...source.matchAll(/pi\.registerCommand\("([^"]+)"/g)].map((match) => match[1]);
+}
+
+function extractDocumentedTools(readmeText) {
+  return [...new Set([...readmeText.matchAll(/`(roblox_[a-z_]+)`/g)].map((match) => match[1]))];
+}
+
+function extractDocumentedCommands(readmeText) {
+  return [...new Set([...readmeText.matchAll(/`(\/roblox:[a-z-]+)/g)].map((match) => match[1]))];
+}
 
 test("package declares pi extensions", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
@@ -52,4 +70,27 @@ for (const [name, workflow] of [
 test("publish workflow pins actions/setup-node to the same commit as CI", () => {
   assert.match(publishWorkflow, new RegExp(pinnedSetupNode));
   assert.doesNotMatch(publishWorkflow, /actions\/setup-node@v\d+/);
+});
+
+test("README documents every registered Roblox tool", () => {
+  const registeredTools = extractRegisteredTools(extensionSource);
+  const documentedTools = extractDocumentedTools(readme);
+
+  assert.deepEqual(
+    documentedTools.sort(),
+    registeredTools.sort(),
+    "README tool names must match pi.registerTool registrations",
+  );
+});
+
+test("README documents every registered Roblox slash command", () => {
+  const registeredCommands = extractRegisteredCommands(extensionSource);
+  const documentedCommands = extractDocumentedCommands(readme);
+
+  for (const command of registeredCommands) {
+    assert.ok(
+      documentedCommands.includes(`/${command}`),
+      `README must document /${command}`,
+    );
+  }
 });
