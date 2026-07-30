@@ -95,16 +95,15 @@ if (!publishableChanged) {
 }
 
 const headVersion = JSON.parse(readFileSync("package.json", "utf8")).version;
-const changelogOnly =
-  changed.length === 1 &&
-  changed[0] === "CHANGELOG.md" &&
-  !changed.includes("package.json");
+const publishableChangedFiles = changed.filter((f) => isPublishablePath(f, publishable));
+const changelogOnlyPublishableChange =
+  publishableChangedFiles.length === 1 && publishableChangedFiles[0] === "CHANGELOG.md";
 
-if (changelogOnly) {
+if (changelogOnlyPublishableChange) {
   const baseVersion = readPackageVersion(baseRef);
   if (headVersion === baseVersion) {
     try {
-      run(`git rev-parse --verify v${headVersion}^{commit}`);
+      run(`git rev-parse --verify refs/tags/v${headVersion}`);
       console.log(
         `version:check ok — retroactive CHANGELOG backfill for already-tagged v${headVersion}`,
       );
