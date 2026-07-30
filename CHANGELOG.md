@@ -2,16 +2,22 @@
 
 ## Unreleased
 
-### Changed
-
-- Bump package version to `0.3.9` for the next patch release.
-
-- Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.9] - 2026-07-20
+
+### Fixed
+
+- Pin release workflow `actions/checkout` and `actions/setup-node` to the same commit SHAs as CI.
+
+## [0.3.8] - 2026-07-04
+
+### Changed
+
+- Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
 
 ## [0.3.7] - 2026-07-03
 
