@@ -94,12 +94,33 @@ if (!publishableChanged) {
   process.exit(0);
 }
 
-const baseVersion = readPackageVersion(baseRef);
 const headVersion = JSON.parse(readFileSync("package.json", "utf8")).version;
+const changelogOnly =
+  changed.length === 1 &&
+  changed[0] === "CHANGELOG.md" &&
+  !changed.includes("package.json");
 
-if (compareSemver(headVersion, baseVersion) <= 0) {
+if (changelogOnly) {
+  const baseVersion = readPackageVersion(baseRef);
+  if (headVersion === baseVersion) {
+    try {
+      run(`git rev-parse --verify v${headVersion}^{commit}`);
+      console.log(
+        `version:check ok — retroactive CHANGELOG backfill for already-tagged v${headVersion}`,
+      );
+      process.exit(0);
+    } catch {
+      // Fall through to the normal publishable-change guard.
+    }
+  }
+}
+
+const baseVersion = readPackageVersion(baseRef);
+const headVersionFromFile = JSON.parse(readFileSync("package.json", "utf8")).version;
+
+if (compareSemver(headVersionFromFile, baseVersion) <= 0) {
   console.error(
-    `version:check fail — publishable files changed but package.json version did not increase (${baseVersion} -> ${headVersion}). Bump patch/minor/major per issue metadata.`,
+    `version:check fail — publishable files changed but package.json version did not increase (${baseVersion} -> ${headVersionFromFile}). Bump patch/minor/major per issue metadata.`,
   );
   process.exit(1);
 }
@@ -112,6 +133,6 @@ if (!changed.includes("CHANGELOG.md")) {
 }
 
 console.log(
-  `version:check ok — ${baseVersion} -> ${headVersion}, CHANGELOG.md updated`,
+  `version:check ok — ${baseVersion} -> ${headVersionFromFile}, CHANGELOG.md updated`,
 );
 process.exit(0);

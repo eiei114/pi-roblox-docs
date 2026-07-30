@@ -4,6 +4,7 @@ import test from "node:test";
 
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const changelog = await readFile(new URL("../CHANGELOG.md", import.meta.url), "utf8");
 const extensionSource = await readFile(new URL("../extensions/roblox-docs.ts", import.meta.url), "utf8");
 const autoReleaseWorkflow = await readFile(new URL("../.github/workflows/auto-release.yml", import.meta.url), "utf8");
 const publishWorkflow = await readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8");
@@ -93,4 +94,12 @@ test("README documents every registered Roblox slash command", () => {
       `README must document /${command}`,
     );
   }
+});
+
+test("CHANGELOG documents the package.json version", () => {
+  assert.match(
+    changelog,
+    new RegExp(`## \\[${packageJson.version}\\]`),
+    `CHANGELOG must include a [${packageJson.version}] release section`,
+  );
 });
