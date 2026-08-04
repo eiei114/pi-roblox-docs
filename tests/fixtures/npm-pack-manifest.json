@@ -1,0 +1,18 @@
+[
+  "CHANGELOG.md",
+  "LICENSE",
+  "README.md",
+  "ROADMAP.md",
+  "SECURITY.md",
+  "docs/examples.md",
+  "docs/release.md",
+  "docs/usage.md",
+  "extensions/cache-freshness.js",
+  "extensions/cache-freshness.ts",
+  "extensions/enum-aliases.js",
+  "extensions/enum-aliases.ts",
+  "extensions/luau-globals.js",
+  "extensions/luau-globals.ts",
+  "extensions/roblox-docs.ts",
+  "package.json"
+]
