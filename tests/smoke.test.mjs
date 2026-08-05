@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -101,5 +102,25 @@ test("CHANGELOG documents the package.json version", () => {
     changelog,
     new RegExp(`## \\[${packageJson.version}\\]`),
     `CHANGELOG must include a [${packageJson.version}] release section`,
+  );
+});
+
+const expectedPackManifest = JSON.parse(
+  await readFile(new URL("./fixtures/npm-pack-manifest.json", import.meta.url), "utf8"),
+);
+
+function readPackManifestPaths() {
+  const output = execSync("npm pack --dry-run --json", { encoding: "utf8" });
+  const [packResult] = JSON.parse(output);
+  return packResult.files.map((entry) => entry.path).sort();
+}
+
+test("npm pack manifest matches the expected publishable file list", () => {
+  const actualPaths = readPackManifestPaths();
+
+  assert.deepEqual(
+    actualPaths,
+    expectedPackManifest.sort(),
+    "npm pack contents drifted from tests/fixtures/npm-pack-manifest.json; update package.json files or the fixture intentionally",
   );
 });
