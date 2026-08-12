@@ -27,6 +27,18 @@ function extractDocumentedCommands(readmeText) {
   return [...new Set([...readmeText.matchAll(/`(\/roblox:[a-z-]+)/g)].map((match) => match[1]))];
 }
 
+function extractToolBlock(source, toolName) {
+  const parts = source.split("pi.registerTool({");
+  for (let index = 1; index < parts.length; index++) {
+    const nameMatch = parts[index].match(/name:\s*"([^"]+)"/);
+    if (nameMatch?.[1] !== toolName) continue;
+    const end = parts[index].indexOf("\n  });");
+    if (end === -1) return null;
+    return parts[index].slice(0, end);
+  }
+  return null;
+}
+
 test("package declares pi extensions", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
 });
@@ -124,3 +136,26 @@ test("npm pack manifest matches the expected publishable file list", () => {
     "npm pack contents drifted from tests/fixtures/npm-pack-manifest.json; update package.json files or the fixture intentionally",
   );
 });
+
+const cacheDependentTools = JSON.parse(
+  await readFile(new URL("./fixtures/cache-dependent-tools.json", import.meta.url), "utf8"),
+);
+const expectedNotSyncedPattern =
+  /if \(!data\) return toolText\(notSyncedMessage\(\), \{ error: "not_synced", cacheDir: getCacheDir\(\) \}\)/;
+
+test("notSyncedMessage helper defines shared missing-cache guidance", () => {
+  assert.match(extensionSource, /function notSyncedMessage\(\): string/);
+  assert.match(extensionSource, /Roblox docs cache is missing\. Call roblox_sync first\./);
+});
+
+for (const toolName of cacheDependentTools) {
+  test(`cache-dependent tool ${toolName} returns notSyncedMessage when cache is missing`, () => {
+    const block = extractToolBlock(extensionSource, toolName);
+    assert.ok(block, `missing registerTool block for ${toolName}`);
+    assert.match(
+      block,
+      expectedNotSyncedPattern,
+      `${toolName} must use notSyncedMessage() for missing cache`,
+    );
+  });
+}
