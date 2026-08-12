@@ -33,7 +33,8 @@ function extractToolBlock(source, toolName) {
     const nameMatch = parts[index].match(/name:\s*"([^"]+)"/);
     if (nameMatch?.[1] !== toolName) continue;
     const end = parts[index].indexOf("\n  });");
-    return end === -1 ? parts[index] : parts[index].slice(0, end);
+    if (end === -1) return null;
+    return parts[index].slice(0, end);
   }
   return null;
 }
