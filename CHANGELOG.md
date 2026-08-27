@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Sync `ROADMAP.md` compliance checklist with completed Phase 1 guardrails (SHA-pinned workflows, README alignment test, npm pack manifest fixture) and add a smoke test to prevent checklist drift.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

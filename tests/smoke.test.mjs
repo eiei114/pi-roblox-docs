@@ -10,6 +10,7 @@ const extensionSource = await readFile(new URL("../extensions/roblox-docs.ts", i
 const autoReleaseWorkflow = await readFile(new URL("../.github/workflows/auto-release.yml", import.meta.url), "utf8");
 const publishWorkflow = await readFile(new URL("../.github/workflows/publish.yml", import.meta.url), "utf8");
 const ciWorkflow = await readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+const roadmap = await readFile(new URL("../ROADMAP.md", import.meta.url), "utf8");
 
 function extractRegisteredTools(source) {
   return [...source.matchAll(/pi\.registerTool\(\{\s*\n\s*name:\s*"([^"]+)"/g)].map((match) => match[1]);
@@ -128,4 +129,35 @@ test("npm pack manifest matches the expected publishable file list", () => {
 test("notSyncedMessage helper defines shared missing-cache guidance", () => {
   assert.match(extensionSource, /function notSyncedMessage\(\): string/);
   assert.match(extensionSource, /Roblox docs cache is missing\. Call roblox_sync first\./);
+});
+
+test("ROADMAP compliance checklist stays aligned with package version and completed guardrails", () => {
+  const escapedVersion = packageJson.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(
+    roadmap,
+    new RegExp(`^Current status as of v${escapedVersion}\\.`, "m"),
+    "ROADMAP compliance checklist version stamp must match package.json",
+  );
+
+  const completedChecklistItems = [
+    "GitHub Actions pinned to immutable SHAs",
+    "README ↔ registered tools/commands drift guard",
+    "`npm pack` manifest drift guard",
+    "ROADMAP compliance checklist version stamp",
+  ];
+
+  for (const item of completedChecklistItems) {
+    const escapedItem = item.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(
+      roadmap,
+      new RegExp(`\\| (?:\\*\\*)?${escapedItem}(?:\\*\\*)? \\| ✅ done \\|`),
+      `ROADMAP must mark "${item}" as done`,
+    );
+  }
+
+  assert.doesNotMatch(
+    roadmap,
+    /\| \*\*GitHub Actions pinned to immutable SHAs\*\* \| ⚠️ partial \|/,
+    "ROADMAP must not regress GitHub Actions pinning to partial",
+  );
 });

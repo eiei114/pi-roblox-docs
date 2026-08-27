@@ -46,11 +46,11 @@ no known compliance gaps.
 
 | # | Item | Type | Bump | Acceptance |
 | --- | --- | --- | --- | --- |
-| 1.1 | Pin **all** GitHub Actions to immutable SHAs. `ci.yml` is already pinned; `auto-release.yml` and `publish.yml` still float on `actions/checkout@v4` / `actions/setup-node@v4`. | compliance | patch | `grep -R "uses: actions/" .github` shows only SHA-pinned refs; smoke test extended to assert no floating `@v*`. |
+| 1.1 | Pin **all** GitHub Actions to immutable SHAs. | compliance | patch | ✅ done — all workflows use SHA-pinned refs; smoke test asserts no floating `@v*`. |
 | 1.2 | Close `pi-extension-template` compliance checklist (see section below); record any intentional deviations in this file. | compliance | patch | Checklist section updated with status + rationale. |
-| 1.3 | README alignment: verify every documented tool and slash command matches registered names (`roblox_sync`, `roblox_health`, `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, `roblox_search_devforum`, `roblox_clear_cache`; `/roblox:sync`, `/roblox:health`, `/roblox:devforum`, `/roblox:clear-cache`). | docs | patch | A smoke test asserts README tool/command tokens match `pi.registerTool` / `pi.registerCommand` names. (Carries the standing **README alignment** backlog task.) |
-| 1.4 | `npm pack` contents audit: confirm `files` ships exactly `README.md`, `LICENSE`, `CHANGELOG.md`, `SECURITY.md`, and `extensions/` — no stray sources, no missing docs. | quality | patch | `npm run pack:dry` output captured as the expected manifest; drift breaks CI. |
-| 1.5 | Error-path review: every tool returns a stable, user-readable message when the cache is not synced (today: `notSyncedMessage()`). Standardize wording across tools. | stabilization | patch | All 8 tools emit the same not-synced guidance; snapshot test covers it. |
+| 1.3 | README alignment: verify every documented tool and slash command matches registered names (`roblox_sync`, `roblox_health`, `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, `roblox_lookup_enum`, `roblox_get_luau_global`, `roblox_search_devforum`, `roblox_clear_cache`; `/roblox:sync`, `/roblox:health`, `/roblox:devforum`, `/roblox:clear-cache`). | docs | patch | ✅ done — smoke test asserts README tool/command tokens match `pi.registerTool` / `pi.registerCommand` names. |
+| 1.4 | `npm pack` contents audit: confirm `files` ships the expected publishable set — no stray sources, no missing docs. | quality | patch | ✅ done — `tests/fixtures/npm-pack-manifest.json` captures the expected manifest; drift breaks CI. |
+| 1.5 | Error-path review: every cache-dependent lookup tool returns a stable, user-readable message when the cache is not synced (today: `notSyncedMessage()`). Standardize wording across tools. | stabilization | patch | All 6 cache-dependent lookup tools emit the same not-synced guidance; smoke and runtime tests cover it. |
 
 ## Phase 2 — Month 2: Performance, token efficiency & design boundaries
 
@@ -121,7 +121,7 @@ index hit-rate) so coverage is observable rather than anecdotal.
 
 ## `pi-extension-template` compliance checklist
 
-Current status as of v0.1.4. Deviations are tracked here so they are intentional.
+Current status as of v0.3.10. Deviations are tracked here so they are intentional.
 
 | Item | Status | Note |
 | --- | --- | --- |
@@ -135,9 +135,10 @@ Current status as of v0.1.4. Deviations are tracked here so they are intentional
 | npm provenance (`id-token: write`) | ✅ done | `publish.yml` |
 | Keep a Changelog + SemVer | ✅ done | `CHANGELOG.md` |
 | `SECURITY.md` + reporting policy | ✅ done | — |
-| **GitHub Actions pinned to immutable SHAs** | ⚠️ partial | `ci.yml` pinned; `auto-release.yml`/`publish.yml` still float `@v4` → Phase 1.1 |
-| README ↔ registered tools/commands drift guard | ⚠️ gap | to add in Phase 1.3 |
-| `npm pack` manifest drift guard | ⚠️ gap | to add in Phase 1.4 |
+| **GitHub Actions pinned to immutable SHAs** | ✅ done | All workflows pin `actions/checkout` and `actions/setup-node` to the same SHAs as CI; smoke test rejects floating `@v*`. |
+| README ↔ registered tools/commands drift guard | ✅ done | `tests/smoke.test.mjs` asserts README tokens match registrations. |
+| `npm pack` manifest drift guard | ✅ done | `tests/fixtures/npm-pack-manifest.json` + smoke test guard publishable file drift. |
+| ROADMAP compliance checklist version stamp | ✅ done | Smoke test keeps the checklist version stamp aligned with `package.json`. |
 
 ## Backlog integration
 
