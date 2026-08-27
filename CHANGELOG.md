@@ -2,14 +2,17 @@
 
 ## Unreleased
 
-### Fixed
-
-- Sync `ROADMAP.md` compliance checklist with completed Phase 1 guardrails (SHA-pinned workflows, README alignment test, npm pack manifest fixture) and add a smoke test to prevent checklist drift.
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.11] - 2026-08-27
+
+### Fixed
+
+- Sync `ROADMAP.md` compliance checklist with completed Phase 1 guardrails (SHA-pinned workflows, README alignment test, npm pack manifest fixture) and add a smoke test to prevent checklist drift.
+- Tighten the ROADMAP version smoke test so the package-version stamp must match the complete status line.
 
 ## [0.3.10] - 2026-08-04
 
