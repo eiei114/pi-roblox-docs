@@ -132,9 +132,10 @@ test("notSyncedMessage helper defines shared missing-cache guidance", () => {
 });
 
 test("ROADMAP compliance checklist stays aligned with package version and completed guardrails", () => {
+  const escapedVersion = packageJson.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   assert.match(
     roadmap,
-    new RegExp(`Current status as of v${packageJson.version}`),
+    new RegExp(`^Current status as of v${escapedVersion}\\.`, "m"),
     "ROADMAP compliance checklist version stamp must match package.json",
   );
 
