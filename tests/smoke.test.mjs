@@ -135,7 +135,10 @@ test("ROADMAP compliance checklist stays aligned with package version and comple
   const escapedVersion = packageJson.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   assert.match(
     roadmap,
-    new RegExp(`^Current status as of v${escapedVersion}\\.`, "m"),
+    new RegExp(
+      `^Current status as of v${escapedVersion}\\. Deviations are tracked here so they are intentional\\.$`,
+      "m",
+    ),
     "ROADMAP compliance checklist version stamp must match package.json",
   );
 
