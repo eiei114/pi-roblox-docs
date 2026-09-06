@@ -13,6 +13,7 @@ import {
   formatEnumLookupMiss,
   formatEnumLookupResult,
   formatEnumSuggestions,
+  formatEnumValues,
   lookupEnum,
   suggestEnums,
   type EnumLookupIndex,
@@ -24,11 +25,11 @@ import {
   lookupLuauGlobal,
   suggestLuauGlobals,
 } from "./luau-globals.js";
+import { clampLimit, firstSentence, splitTokens, truncateOutput } from "./text-utils.js";
 
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox";
 const USER_AGENT = "pi-roblox-docs/0.3.0";
 const DEFAULT_LANGUAGE = "en-us";
-const MAX_OUTPUT_CHARS = 45_000;
 const DEFAULT_SEARCH_LIMIT = 15;
 const MAX_SEARCH_LIMIT = 50;
 const DEVFORUM_CACHE_TTL_MS = 60 * 60 * 1000;
@@ -357,14 +358,6 @@ function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }
 
-function splitTokens(text: string): string[] {
-  return text
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 2);
-}
-
 function valueTypeName(valueType: ValueType, fallback = "unknown"): string {
   if (!valueType) return fallback;
   if (typeof valueType === "string") return valueType;
@@ -515,25 +508,6 @@ async function loadData(language = DEFAULT_LANGUAGE): Promise<LoadedData | undef
 
   loadedData = buildLoadedData(dump, docs, meta);
   return loadedData;
-}
-
-function firstSentence(text: string, maxChars: number): string {
-  const compact = text.replace(/\s+/g, " ").trim();
-  if (compact.length <= maxChars) return compact;
-  return compact.slice(0, maxChars - 1).trimEnd() + "…";
-}
-
-function truncateOutput(text: string, maxChars = MAX_OUTPUT_CHARS): { text: string; truncated: boolean } {
-  if (text.length <= maxChars) return { text, truncated: false };
-  return {
-    text: `${text.slice(0, maxChars).trimEnd()}\n\n[Output truncated at ${maxChars.toLocaleString()} chars.]`,
-    truncated: true,
-  };
-}
-
-function clampLimit(limit: unknown, defaultValue: number, maxValue: number): number {
-  if (typeof limit !== "number" || !Number.isFinite(limit)) return defaultValue;
-  return Math.max(1, Math.min(maxValue, Math.floor(limit)));
 }
 
 function scoreSearchItem(item: SearchResult, query: string): number {
@@ -705,15 +679,6 @@ function formatMember(data: LoadedData, owner: ApiClass, requestedClassName: str
   if (member.Tags?.includes("Deprecated")) lines.push("", "WARNING: This member is deprecated.");
 
   lines.push("", `DOCS: https://create.roblox.com/docs/reference/engine/classes/${encodeURIComponent(className)}#${encodeURIComponent(name)}`);
-  return truncateOutput(lines.join("\n")).text;
-}
-
-function formatEnum(enumInfo: ApiEnum): string {
-  const name = enumInfo.Name ?? "Unknown";
-  const items = [...(enumInfo.Items ?? [])].sort((a, b) => (a.Value ?? 0) - (b.Value ?? 0));
-  const lines = [`ENUM: ${name}`, `Values (${items.length}):`, ""];
-  for (const item of items) lines.push(`  ${item.Name ?? "Unknown"} = ${item.Value ?? 0}`);
-  lines.push("", `DOCS: https://create.roblox.com/docs/reference/engine/enums/${encodeURIComponent(name)}`);
   return truncateOutput(lines.join("\n")).text;
 }
 
@@ -1025,7 +990,7 @@ export default function (pi: ExtensionAPI) {
         const suggestions = search(data, params.enumName, 5).filter((result) => result.type === "enum").map((result) => result.name);
         return toolText(`Enum "${params.enumName}" not found.${suggestions.length ? ` Did you mean: ${suggestions.join(", ")}?` : ""}`, { error: "not_found", suggestions });
       }
-      const output = formatEnum(enumInfo);
+      const output = truncateOutput(formatEnumValues(enumInfo)).text;
       return toolText(output, { enumName: enumInfo.Name, itemCount: enumInfo.Items?.length ?? 0 });
     },
   });

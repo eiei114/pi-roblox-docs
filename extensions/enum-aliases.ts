@@ -1,3 +1,5 @@
+import { splitTokens } from "./text-utils.js";
+
 export interface ApiEnumItem {
   Name?: string;
   Value?: number;
@@ -24,15 +26,6 @@ function normalizeQuery(query: string): string {
 }
 
 const TOKEN_STOP_WORDS = new Set(["a", "an", "the", "not", "no", "for", "and", "or", "to", "of", "in", "on", "at", "by"]);
-
-function splitTokens(text: string): string[] {
-  return text
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 2);
-}
 
 function significantQueryTokens(query: string): string[] {
   return splitTokens(query).filter((token) => !TOKEN_STOP_WORDS.has(token));

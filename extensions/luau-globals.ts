@@ -1,3 +1,5 @@
+import { firstSentence } from "./text-utils.js";
+
 export interface LuauGlobalDocEntry {
   documentation?: string;
   keys?: Record<string, string>;
@@ -88,12 +90,6 @@ export function suggestLuauGlobals(index: LuauGlobalsIndex, query: string, limit
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 
   return scored.slice(0, limit).map((item) => item.name);
-}
-
-export function firstSentence(text: string, maxChars: number): string {
-  const compact = text.replace(/\s+/g, " ").trim();
-  if (compact.length <= maxChars) return compact;
-  return compact.slice(0, maxChars - 1).trimEnd() + "…";
 }
 
 export function formatLuauGlobal(item: LuauGlobalItem, options: { memberLimit?: number } = {}): string {

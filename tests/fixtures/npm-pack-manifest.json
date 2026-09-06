@@ -14,5 +14,7 @@
   "extensions/luau-globals.js",
   "extensions/luau-globals.ts",
   "extensions/roblox-docs.ts",
+  "extensions/text-utils.js",
+  "extensions/text-utils.ts",
   "package.json"
 ]

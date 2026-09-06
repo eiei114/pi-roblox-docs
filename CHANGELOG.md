@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## [0.3.12] - 2026-09-06
+
+### Changed
+
+- Extract shared text helpers (`firstSentence`, `splitTokens`, `truncateOutput`, `clampLimit`) into `extensions/text-utils.ts` and reuse `formatEnumValues` for `roblox_get_enum` output (DOT-1724).
 
 All notable changes to this project will be documented in this file.
 
