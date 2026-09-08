@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.13] - 2026-09-09
+
+### Changed
+
+- Precompute Roblox search index name tokens once at cache build time and reuse per-query tokenization in `roblox_search`, avoiding repeated lowercase/split work across ~12k indexed items (DOT-1785).
+
 ## [0.3.12] - 2026-09-06
 
 ### Changed
