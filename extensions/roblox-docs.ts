@@ -101,6 +101,14 @@ interface SearchResult {
   description: string;
   tags: string[];
   score: number;
+  nameLower: string;
+  fullNameLower: string;
+  nameTokens: string[];
+}
+
+interface SearchQueryContext {
+  queryLower: string;
+  queryTokens: string[];
 }
 
 import type { LuauGlobalsIndex } from "./luau-globals.js";
@@ -457,17 +465,22 @@ function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: Cac
     if (!cls.Name) continue;
     inheritanceMap.set(normalizeName(cls.Name), buildInheritance(classMap, cls.Name));
     const classDoc = getClassDoc(dataShell, cls.Name);
+    const classNameLower = cls.Name.toLowerCase();
     searchItems.push({
       type: "class",
       name: cls.Name,
       description: classDoc ? firstSentence(classDoc, 220) : `Class inheriting from ${cls.Superclass ?? "root"}`,
       tags: cls.Tags ?? [],
       score: 0,
+      nameLower: classNameLower,
+      fullNameLower: classNameLower,
+      nameTokens: splitTokens(cls.Name),
     });
 
     for (const member of cls.Members ?? []) {
       if (!member.Name) continue;
       const memberDoc = getMemberDoc(dataShell, cls.Name, member.Name);
+      const fullName = `${cls.Name}.${member.Name}`;
       searchItems.push({
         type: "member",
         name: member.Name,
@@ -476,18 +489,25 @@ function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: Cac
         description: memberDoc ? firstSentence(memberDoc, 220) : describeMember(member),
         tags: member.Tags ?? [],
         score: 0,
+        nameLower: member.Name.toLowerCase(),
+        fullNameLower: fullName.toLowerCase(),
+        nameTokens: splitTokens(fullName),
       });
     }
   }
 
   for (const enumInfo of dump.Enums ?? []) {
     if (!enumInfo.Name) continue;
+    const enumNameLower = enumInfo.Name.toLowerCase();
     searchItems.push({
       type: "enum",
       name: enumInfo.Name,
       description: `Enum with ${enumInfo.Items?.length ?? 0} values`,
       tags: [],
       score: 0,
+      nameLower: enumNameLower,
+      fullNameLower: enumNameLower,
+      nameTokens: splitTokens(enumInfo.Name),
     });
   }
 
@@ -510,27 +530,28 @@ async function loadData(language = DEFAULT_LANGUAGE): Promise<LoadedData | undef
   return loadedData;
 }
 
-function scoreSearchItem(item: SearchResult, query: string): number {
+function buildSearchQueryContext(query: string): SearchQueryContext {
   const queryLower = query.toLowerCase().trim();
-  const queryTokens = splitTokens(queryLower);
-  if (queryTokens.length === 0) return 0;
+  return { queryLower, queryTokens: splitTokens(queryLower) };
+}
 
-  const fullName = item.className ? `${item.className}.${item.name}` : item.name;
-  const nameLower = item.name.toLowerCase();
-  const fullNameLower = fullName.toLowerCase();
-  const nameTokens = splitTokens(fullName);
-  const haystack = `${fullName} ${item.type} ${item.memberType ?? ""} ${item.description} ${(item.tags ?? []).join(" ")}`.toLowerCase();
+function scoreSearchItem(item: SearchResult, query: SearchQueryContext): number {
+  if (query.queryTokens.length === 0) return 0;
 
   let score = 0;
-  if (fullNameLower === queryLower || nameLower === queryLower) score += 300;
-  if (fullNameLower.startsWith(queryLower) || nameLower.startsWith(queryLower)) score += 120;
-  if (fullNameLower.includes(queryLower) || nameLower.includes(queryLower)) score += 80;
+  if (item.fullNameLower === query.queryLower || item.nameLower === query.queryLower) score += 300;
+  if (item.fullNameLower.startsWith(query.queryLower) || item.nameLower.startsWith(query.queryLower)) score += 120;
+  if (item.fullNameLower.includes(query.queryLower) || item.nameLower.includes(query.queryLower)) score += 80;
 
-  for (const token of queryTokens) {
-    if (nameTokens.includes(token)) score += 40;
-    else if (nameTokens.some((nameToken) => nameToken.startsWith(token))) score += 25;
-    else if (fullNameLower.includes(token)) score += 15;
-    else if (haystack.includes(token)) score += 8;
+  let haystack: string | undefined;
+  for (const token of query.queryTokens) {
+    if (item.nameTokens.includes(token)) score += 40;
+    else if (item.nameTokens.some((nameToken) => nameToken.startsWith(token))) score += 25;
+    else if (item.fullNameLower.includes(token)) score += 15;
+    else {
+      haystack ??= `${item.fullNameLower} ${item.type} ${item.memberType ?? ""} ${item.description} ${item.tags.join(" ")}`;
+      if (haystack.includes(token)) score += 8;
+    }
   }
 
   if (item.type === "class") score += 8;
@@ -538,9 +559,10 @@ function scoreSearchItem(item: SearchResult, query: string): number {
   return score;
 }
 
-function search(data: LoadedData, query: string, limit: number): SearchResult[] {
+export function search(data: LoadedData, query: string, limit: number): SearchResult[] {
+  const queryContext = buildSearchQueryContext(query);
   const scored = data.searchItems
-    .map((item) => ({ ...item, score: scoreSearchItem(item, query) }))
+    .map((item) => ({ ...item, score: scoreSearchItem(item, queryContext) }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 

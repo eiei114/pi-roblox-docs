@@ -121,7 +121,7 @@ index hit-rate) so coverage is observable rather than anecdotal.
 
 ## `pi-extension-template` compliance checklist
 
-Current status as of v0.3.12. Deviations are tracked here so they are intentional.
+Current status as of v0.3.13. Deviations are tracked here so they are intentional.
 
 | Item | Status | Note |
 | --- | --- | --- |
