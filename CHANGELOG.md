@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.14] - 2026-09-22
+
+### Changed
+
+- Refresh the sync and health example so new users can check cache readiness before downloading or forcing a replacement (DOT-1934).
+
 ## [0.3.13] - 2026-09-09
 
 ### Changed

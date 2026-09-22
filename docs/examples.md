@@ -13,19 +13,27 @@ pi -e ./extensions/roblox-docs.ts
 
 ## Sync and health
 
+Use the health check first when you are unsure whether the local cache is ready:
+
 ```text
-/roblox:sync
 /roblox:health
 ```
 
-Tool equivalents:
+If it reports a missing or stale cache, force a sync and check again. A plain `/roblox:sync` skips the download when the cached version already matches the remote version, so the recorded sync time stays old:
 
 ```text
-roblox_sync({ force: false })
-roblox_health()
+/roblox:sync --force
+/roblox:health
 ```
 
-Force a redownload:
+Tool equivalents (the `force` argument is optional):
+
+```text
+roblox_health()
+roblox_sync({ force: false })
+```
+
+Force a redownload when the cached data needs to be replaced:
 
 ```text
 /roblox:sync --force
