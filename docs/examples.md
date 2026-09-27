@@ -30,17 +30,13 @@ Tool equivalents (the `force` argument is optional):
 
 ```text
 roblox_health()
-roblox_sync({ force: false })
-```
-
-Force a redownload when the cached data needs to be replaced:
-
-```text
-/roblox:sync --force
-```
-
-```text
 roblox_sync({ force: true })
+```
+
+Use `force: true` here when health reports a stale cache; `force: false` is enough for a missing cache or a routine version check:
+
+```text
+roblox_sync({ force: false })
 ```
 
 ## Roblox API lookup
