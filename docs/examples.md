@@ -31,9 +31,10 @@ Tool equivalents (the `force` argument is optional):
 ```text
 roblox_health()
 roblox_sync({ force: true })
+roblox_health()
 ```
 
-Use `force: true` here when health reports a stale cache; `force: false` is enough for a missing cache or a routine version check:
+The second health check confirms that the forced refresh completed. Use `force: true` here when health reports a stale cache; `force: false` is enough for a missing cache or a routine version check:
 
 ```text
 roblox_sync({ force: false })
