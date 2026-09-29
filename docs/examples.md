@@ -19,7 +19,7 @@ Use the health check first when you are unsure whether the local cache is ready:
 /roblox:health
 ```
 
-If it reports a missing or stale cache, force a sync and check again. A plain `/roblox:sync` skips the download when the cached version already matches the remote version, so the recorded sync time stays old:
+If it reports a stale cache, force a sync and check again. For a missing cache, a plain `/roblox:sync` downloads the required files. A plain sync skips the download when the cached version already matches the remote version, so the recorded sync time stays old:
 
 ```text
 /roblox:sync --force
