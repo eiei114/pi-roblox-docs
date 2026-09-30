@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.15] - 2026-09-28
+
+### Fixed
+
+- Clarify stale-cache forced sync and post-sync health verification in the examples (DOT-2030).
+
 ## [0.3.14] - 2026-09-22
 
 ### Changed

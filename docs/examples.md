@@ -19,7 +19,7 @@ Use the health check first when you are unsure whether the local cache is ready:
 /roblox:health
 ```
 
-If it reports a missing or stale cache, force a sync and check again. A plain `/roblox:sync` skips the download when the cached version already matches the remote version, so the recorded sync time stays old:
+If it reports a stale cache, force a sync and check again. For a missing cache, a plain `/roblox:sync` downloads the required files. A plain sync skips the download when the cached version already matches the remote version, so the recorded sync time stays old:
 
 ```text
 /roblox:sync --force
@@ -30,17 +30,14 @@ Tool equivalents (the `force` argument is optional):
 
 ```text
 roblox_health()
-roblox_sync({ force: false })
-```
-
-Force a redownload when the cached data needs to be replaced:
-
-```text
-/roblox:sync --force
-```
-
-```text
 roblox_sync({ force: true })
+roblox_health()
+```
+
+The second health check confirms that the forced refresh completed. Use `force: true` here when health reports a stale cache; `force: false` is enough for a missing cache or a routine version check:
+
+```text
+roblox_sync({ force: false })
 ```
 
 ## Roblox API lookup
