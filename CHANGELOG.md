@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.17] - 2026-10-02
+
+### Changed
+
+- Document the `roblox_search_devforum` cache behavior and `force: true` refresh example (DOT-2101).
+
 ## [0.3.16] - 2026-09-30
 
 ### Changed

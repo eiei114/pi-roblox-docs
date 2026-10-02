@@ -105,6 +105,21 @@ Lookups for **Roblox instance classes** (`Part`, `Player`), **services** (`Tween
 roblox_search_devforum({ query: "TweenService best practices" })
 ```
 
+## DevForum search cache
+
+DevForum results are cached locally for one hour. Use `force: true` when you need to bypass a cached response and fetch fresh results:
+
+```text
+roblox_search_devforum({ query: "TweenService best practices" })
+roblox_search_devforum({ query: "TweenService best practices", force: true })
+```
+
+The first call may return a cached result; the forced call bypasses that entry. The slash command searches with the default cache behavior:
+
+```text
+/roblox:devforum TweenService best practices
+```
+
 ## Cache maintenance
 
 ```text
