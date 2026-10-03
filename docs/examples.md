@@ -114,7 +114,7 @@ roblox_search_devforum({ query: "TweenService best practices" })
 roblox_search_devforum({ query: "TweenService best practices", force: true })
 ```
 
-The first call may return a cached result; the forced call bypasses that entry. The slash command searches with the default cache behavior:
+The first call may return a cached result; the forced call bypasses that entry. If the refresh fails, it may still return the stale cached result. The slash command searches with the default cache behavior:
 
 ```text
 /roblox:devforum TweenService best practices
