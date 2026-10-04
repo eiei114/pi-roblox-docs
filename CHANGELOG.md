@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.18] - 2026-10-04
+
+### Changed
+
+- Document the forced DevForum refresh fallback: a forced call bypasses the cache, and a failed refresh can still return the stale cached result (DOT-2119).
+
 ## [0.3.17] - 2026-10-02
 
 ### Changed
