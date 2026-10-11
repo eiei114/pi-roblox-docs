@@ -1,11 +1,5 @@
 # Changelog
 
-## [0.3.19] - 2026-10-11
-
-### Changed
-
-- Update the development dependency `@earendil-works/pi-coding-agent` to 0.99.2.
-
 ## [0.3.18] - 2026-10-04
 
 ### Changed
