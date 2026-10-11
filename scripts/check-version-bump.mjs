@@ -4,6 +4,7 @@
  * and CHANGELOG.md must be updated in the same diff.
  *
  * Publishable paths: template defaults + package.json `files` + `pi.extensions`.
+ * A package.json diff limited to `devDependencies` is non-publishable.
  *
  * Usage:
  *   node scripts/check-version-bump.mjs
@@ -11,6 +12,7 @@
  */
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { isDeepStrictEqual } from "node:util";
 
 const TEMPLATE_DEFAULT = [
   "extensions/",
@@ -51,6 +53,18 @@ function readPackageVersion(ref) {
   return JSON.parse(raw).version;
 }
 
+function packageJsonChangesAreDevDependenciesOnly(baseRef) {
+  try {
+    const basePackage = JSON.parse(run(`git show ${baseRef}:package.json`));
+    const headPackage = JSON.parse(readFileSync("package.json", "utf8"));
+    delete basePackage.devDependencies;
+    delete headPackage.devDependencies;
+    return isDeepStrictEqual(basePackage, headPackage);
+  } catch {
+    return false;
+  }
+}
+
 function loadPublishablePaths() {
   const paths = new Set(TEMPLATE_DEFAULT);
   try {
@@ -88,14 +102,20 @@ try {
   process.exit(0);
 }
 
-const publishableChanged = changed.some((f) => isPublishablePath(f, publishable));
-if (!publishableChanged) {
+const packageJsonChangesAreDevDependenciesOnlyInDiff =
+  changed.includes("package.json") && packageJsonChangesAreDevDependenciesOnly(baseRef);
+const publishableChangedFiles = changed.filter(
+  (file) =>
+    isPublishablePath(file, publishable) &&
+    !(file === "package.json" && packageJsonChangesAreDevDependenciesOnlyInDiff),
+);
+
+if (publishableChangedFiles.length === 0) {
   console.log("version:check ok — no publishable paths changed");
   process.exit(0);
 }
 
 const headVersion = JSON.parse(readFileSync("package.json", "utf8")).version;
-const publishableChangedFiles = changed.filter((f) => isPublishablePath(f, publishable));
 const changelogOnlyPublishableChange =
   publishableChangedFiles.length === 1 && publishableChangedFiles[0] === "CHANGELOG.md";
 
