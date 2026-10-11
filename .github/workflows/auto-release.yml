@@ -1,8 +1,8 @@
 name: Auto Release
 
 on:
-  push:
-    branches: [main]
+  # Release creation is an explicit protected action, not a side effect of merge.
+  workflow_dispatch:
 
 permissions:
   actions: write
@@ -11,6 +11,7 @@ permissions:
 jobs:
   release:
     name: Create release for new version
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
