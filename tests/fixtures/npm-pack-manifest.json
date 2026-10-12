@@ -6,6 +6,7 @@
   "SECURITY.md",
   "docs/examples.md",
   "docs/release.md",
+  "docs/verification/pi-sdk-smoke.json",
   "docs/usage.md",
   "extensions/cache-freshness.js",
   "extensions/cache-freshness.ts",
