@@ -13,7 +13,9 @@ import {
 } from "./pi-sdk-smoke-contract.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const reportPath = resolve(root, "docs/verification/pi-sdk-smoke.json");
+const reportPath = process.argv.includes("--update-curated-report")
+  ? resolve(root, "docs/verification/pi-sdk-smoke.json")
+  : resolve(root, ".tmp/pi-sdk-smoke.json");
 const outputLimit = 1024 * 1024;
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const manifest = readJson(resolve(root, "package.json"));
