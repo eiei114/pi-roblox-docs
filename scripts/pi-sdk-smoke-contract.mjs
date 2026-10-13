@@ -8,6 +8,32 @@ export const SDK_VERSIONS = Object.freeze({
 export const SDK_NAMES = Object.keys(SDK_VERSIONS);
 export const UNHANDLED_ERROR_PATTERN = /UnhandledPromiseRejection|uncaught exception|shutdown error/i;
 export const EXTENSION_LOAD_ERROR_PATTERN = /Failed to load extension|Error loading extension/i;
+const LOCAL_WINDOWS_PATH_PATTERN = /[A-Z]:(?:\\{1,8})/i;
+const LOCAL_WINDOWS_PATH_REDACTION_PATTERN = /\b[A-Z]:(?:\\{1,8})[^ \t\r\n"'<>|,;)}\]]+/gi;
+
+export function redactLocalPaths(value, prefixes) {
+  if (typeof value === "string") {
+    const redactedPrefixes = prefixes.reduce((redacted, [prefix, replacement]) => {
+      const jsonEscapedPrefix = JSON.stringify(prefix).slice(1, -1);
+      return redacted.replaceAll(prefix, replacement).replaceAll(jsonEscapedPrefix, replacement);
+    }, value);
+    return redactedPrefixes.replace(LOCAL_WINDOWS_PATH_REDACTION_PATTERN, "<local-path>");
+  }
+  if (Array.isArray(value)) return value.map((item) => redactLocalPaths(item, prefixes));
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+      redactLocalPaths(key, prefixes), redactLocalPaths(item, prefixes),
+    ]));
+  }
+  return value;
+}
+
+export function assertNoLocalWindowsPaths(serializedReport) {
+  const match = LOCAL_WINDOWS_PATH_PATTERN.exec(serializedReport);
+  if (match) {
+    throw new Error("Generated Pi SDK smoke report contains a local Windows path prefix.");
+  }
+}
 
 export function parseJsonLines(output) {
   return output.split(/\r?\n/).flatMap((line) => {

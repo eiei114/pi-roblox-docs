@@ -3,8 +3,10 @@ import test from "node:test";
 import {
   behaviorAssertions,
   parseJsonLines,
+  redactLocalPaths,
   SDK_VERSIONS,
   VERIFICATION_CONTRACT,
+  assertNoLocalWindowsPaths,
 } from "../scripts/pi-sdk-smoke-contract.mjs";
 
 const status = { type: "extension_ui_request", method: "setStatus", statusKey: "roblox-docs", statusText: "roblox-docs: run roblox_sync" };
@@ -23,6 +25,26 @@ test("SDK behavior contract and JSONL parser are explicit", () => {
     "@earendil-works/pi-tui": "1.1.0",
   });
   assert.deepEqual(parseJsonLines(`not-json\r\n${JSON.stringify(inventory)}\n\n`), [inventory]);
+});
+
+test("report redaction covers nested JSON stdout and rejects local Windows paths", () => {
+  const repo = String.raw`C:\Users\Keisu\workspace\pi-roblox-docs`;
+  const temporary = String.raw`C:\Users\Keisu\AppData\Local\Temp`;
+  const evidence = {
+    invocation: `${repo}\\node_modules\\pi`,
+    nodeExecutable: String.raw`C:\Program Files\nodejs\node.exe`,
+    process: {
+      stdout: `${JSON.stringify({ sourceInfo: { path: `${repo}\\extensions\\plugin.ts` } })}\\n`,
+      responses: [{ cache: `${temporary}\\smoke\\cache` }],
+    },
+  };
+  const reportText = JSON.stringify({ evidence: JSON.stringify(redactLocalPaths(evidence, [
+    [repo, "<repo>"], [temporary, "<temp>"],
+  ])) });
+
+  assert.doesNotMatch(reportText, /[A-Z]:(?:\\{1,8})/i);
+  assert.doesNotThrow(() => assertNoLocalWindowsPaths(reportText));
+  assert.throws(() => assertNoLocalWindowsPaths(JSON.stringify({ evidence: String.raw`C:\Users\someone\repo` })));
 });
 
 test("extension registration requires the actual command inventory and session status", () => {

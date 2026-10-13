@@ -10,6 +10,8 @@ import {
   SDK_VERSIONS,
   UNHANDLED_ERROR_PATTERN,
   VERIFICATION_CONTRACT,
+  assertNoLocalWindowsPaths,
+  redactLocalPaths,
 } from "./pi-sdk-smoke-contract.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -203,9 +205,7 @@ function compactProcessEvidence(processResult) {
   };
 }
 
-function redactLocalPaths(value) {
-  return value.replaceAll(root, "<repo>").replaceAll(tmpdir(), "<temp>");
-}
+const localPathPrefixes = [[root, "<repo>"], [tmpdir(), "<temp>"]];
 
 function makeCase(name, result, evidence, extra = {}) {
   const output = evidence.fullOutput ?? `${evidence.stdout ?? ""}${evidence.stderr ?? ""}`;
@@ -231,8 +231,11 @@ function makeCase(name, result, evidence, extra = {}) {
     command: "npm run smoke:pi",
     exit_code: result.exit_code,
     passed: processHealthy && !hasUnhandledError && !hasLoadError && assertions.every((item) => item.passed),
-    evidence: redactLocalPaths(JSON.stringify(capturedEvidence)),
-    assertions: assertions.map((item) => ({ ...item, observed: redactLocalPaths(item.observed) })),
+    evidence: JSON.stringify(redactLocalPaths(capturedEvidence, localPathPrefixes)),
+    assertions: assertions.map((item) => ({
+      ...item,
+      observed: redactLocalPaths(item.observed, localPathPrefixes),
+    })),
     hasUnhandledError,
     extensionLoadFailure,
   };
@@ -337,7 +340,9 @@ const report = {
   cases: cases.map(({ hasUnhandledError, extensionLoadFailure, ...item }) => item),
 };
 mkdirSync(dirname(reportPath), { recursive: true });
-writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+const serializedReport = JSON.stringify(redactLocalPaths(report, localPathPrefixes), null, 2);
+assertNoLocalWindowsPaths(serializedReport);
+writeFileSync(reportPath, `${serializedReport}\n`);
 console.log(JSON.stringify({ verification_contract: VERIFICATION_CONTRACT, platform: process.platform,
   cases: cases.map(({ name, passed, exit_code }) => ({ name, passed, exit_code })) }));
 if (cases.some((item) => !item.passed)) process.exitCode = 1;
