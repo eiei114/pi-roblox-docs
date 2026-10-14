@@ -121,14 +121,14 @@ index hit-rate) so coverage is observable rather than anecdotal.
 
 ## `pi-extension-template` compliance checklist
 
-Current status as of v0.3.18. Deviations are tracked here so they are intentional.
+Current status as of v0.3.19. Deviations are tracked here so they are intentional.
 
 | Item | Status | Note |
 | --- | --- | --- |
 | `pi.extensions` declared in `package.json` | ✅ done | `["./extensions"]` |
 | `pi-package` keyword for discoverability | ✅ done | — |
 | `publishConfig.access = "public"` | ✅ done | — |
-| `npm run check` (typecheck + test + pack:dry) | ✅ done | — |
+| `npm run check` (typecheck + test + Pi SDK smoke + pack:dry) | ✅ done | Pi SDK behavior smoke uses an isolated real 1.1.0 host. |
 | `version:check` PR guard | ✅ done | `scripts/check-version-bump.mjs` |
 | CI validates PRs + `main` | ✅ done | `.github/workflows/ci.yml` |
 | Auto-release → publish handoff | ✅ done | `auto-release.yml` → `publish.yml` |

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.19] - 2026-10-12
+
+### Changed
+
+- Pin the development Pi SDK to 1.1.0 and verify the real extension host, feature/error paths, reload cleanup, and native shell in CI (DOT-2272).
+
 ## [0.3.18] - 2026-10-04
 
 ### Changed
