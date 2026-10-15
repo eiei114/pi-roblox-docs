@@ -19,10 +19,10 @@ const observation = (rows = [inventory, status, handledPrompt, health], exit_cod
 test("SDK behavior contract and JSONL parser are explicit", () => {
   assert.equal(VERIFICATION_CONTRACT, "pi-sdk-behavior-v2");
   assert.deepEqual(SDK_VERSIONS, {
-    "@earendil-works/pi-agent-core": "1.1.0",
-    "@earendil-works/pi-ai": "1.1.0",
-    "@earendil-works/pi-coding-agent": "1.1.0",
-    "@earendil-works/pi-tui": "1.1.0",
+    "@earendil-works/pi-agent-core": "1.2.0",
+    "@earendil-works/pi-ai": "1.2.0",
+    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-tui": "1.2.0",
   });
   assert.deepEqual(parseJsonLines(`not-json\r\n${JSON.stringify(inventory)}\n\n`), [inventory]);
 });
@@ -87,12 +87,12 @@ test("reload requires second-process registration and feature response, not exit
 });
 
 test("native shell checks exact local Pi version, exit, and stderr", () => {
-  assert.equal(behaviorAssertions("host_shell", { exit_code: 0, shellStdout: "1.1.0\r\n", shellStderr: "" })[0].passed, true);
+  assert.equal(behaviorAssertions("host_shell", { exit_code: 0, shellStdout: "1.2.0\r\n", shellStderr: "" })[0].passed, true);
   for (const values of [
-    { exit_code: 1, shellStdout: "1.1.0", shellStderr: "" },
-    { exit_code: 0, shellStdout: "11.1.0", shellStderr: "" },
-    { exit_code: 0, shellStdout: "1.1.0 but error", shellStderr: "" },
-    { exit_code: 0, shellStdout: "1.1.0", shellStderr: "warning" },
+    { exit_code: 1, shellStdout: "1.2.0", shellStderr: "" },
+    { exit_code: 0, shellStdout: "11.2.0", shellStderr: "" },
+    { exit_code: 0, shellStdout: "1.2.0 but error", shellStderr: "" },
+    { exit_code: 0, shellStdout: "1.2.0", shellStderr: "warning" },
   ]) {
     assert.equal(behaviorAssertions("host_shell", values)[0].passed, false);
   }

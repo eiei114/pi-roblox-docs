@@ -1,9 +1,9 @@
 export const VERIFICATION_CONTRACT = "pi-sdk-behavior-v2";
 export const SDK_VERSIONS = Object.freeze({
-  "@earendil-works/pi-agent-core": "1.1.0",
-  "@earendil-works/pi-ai": "1.1.0",
-  "@earendil-works/pi-coding-agent": "1.1.0",
-  "@earendil-works/pi-tui": "1.1.0",
+  "@earendil-works/pi-agent-core": "1.2.0",
+  "@earendil-works/pi-ai": "1.2.0",
+  "@earendil-works/pi-coding-agent": "1.2.0",
+  "@earendil-works/pi-tui": "1.2.0",
 });
 export const SDK_NAMES = Object.keys(SDK_VERSIONS);
 export const UNHANDLED_ERROR_PATTERN = /UnhandledPromiseRejection|uncaught exception|shutdown error/i;
@@ -73,7 +73,7 @@ export function behaviorAssertions(name, {
   rows = [],
   fullOutput = "",
   exit_code = 1,
-  expectedVersion = "1.1.0",
+  expectedVersion = SDK_VERSIONS["@earendil-works/pi-coding-agent"],
   reloadFirst = null,
   shellStdout = "",
   shellStderr = "",
