@@ -1,6 +1,6 @@
 {
   "name": "pi-roblox-docs",
-  "version": "0.3.20",
+  "version": "0.3.21",
   "description": "Pi native Roblox documentation tools without a background MCP server.",
   "type": "module",
   "keywords": [
@@ -50,10 +50,10 @@
     "typebox": "*"
   },
   "devDependencies": {
-    "@earendil-works/pi-agent-core": "1.2.0",
-    "@earendil-works/pi-ai": "1.2.0",
-    "@earendil-works/pi-coding-agent": "1.2.0",
-    "@earendil-works/pi-tui": "1.2.0",
+    "@earendil-works/pi-agent-core": "1.4.0",
+    "@earendil-works/pi-ai": "1.4.0",
+    "@earendil-works/pi-coding-agent": "1.4.0",
+    "@earendil-works/pi-tui": "1.4.0",
     "@types/node": "latest",
     "typebox": "^1.4.3",
     "typescript": "latest"
