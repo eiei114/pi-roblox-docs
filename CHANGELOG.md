@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.21] - 2026-11-02
+
+### Changed
+
+- Update the pinned development Pi SDK modules to 1.4.0 and refresh real-host behavior verification (DOT-2955).
+
 ## [0.3.20] - 2026-10-16
 
 ### Changed
