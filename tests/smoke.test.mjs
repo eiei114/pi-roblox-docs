@@ -28,6 +28,26 @@ function extractDocumentedCommands(readmeText) {
   return [...new Set([...readmeText.matchAll(/`(\/roblox:[a-z-]+)/g)].map((match) => match[1]))];
 }
 
+const IMMUTABLE_SHA = /^[0-9a-f]{40}$/;
+
+function extractActionPins(workflowText, action) {
+  const pattern = new RegExp(`uses:\\s*${action.replaceAll("/", "\\/")}@([^\\s#]+)`, "g");
+  return [...new Set([...workflowText.matchAll(pattern)].map((match) => match[1]))];
+}
+
+// The canonical pin lives in ci.yml; every other workflow must reuse the same commit so a
+// Dependabot bump never leaves a stale hard-coded SHA behind in this test.
+function readCanonicalPin(workflowText, action) {
+  const pins = extractActionPins(workflowText, action);
+  assert.equal(
+    pins.length,
+    1,
+    `ci workflow must pin ${action} to exactly one ref, found: ${pins.join(", ") || "none"}`,
+  );
+  assert.match(pins[0], IMMUTABLE_SHA, `${action} must be pinned to a 40-character immutable SHA`);
+  return `${action}@${pins[0]}`;
+}
+
 test("package declares pi extensions", () => {
   assert.deepEqual(packageJson.pi.extensions, ["./extensions"]);
 });
@@ -56,8 +76,8 @@ test("release workflow hands off to npm publish", () => {
   assert.match(publishWorkflow, /npm publish --access public/);
 });
 
-const pinnedCheckout = "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5";
-const pinnedSetupNode = "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020";
+const pinnedCheckout = readCanonicalPin(ciWorkflow, "actions/checkout");
+const pinnedSetupNode = readCanonicalPin(ciWorkflow, "actions/setup-node");
 
 for (const [name, workflow] of [
   ["ci", ciWorkflow],
@@ -65,13 +85,17 @@ for (const [name, workflow] of [
   ["publish", publishWorkflow],
 ]) {
   test(`${name} workflow pins actions/checkout to the same commit as CI`, () => {
-    assert.match(workflow, new RegExp(pinnedCheckout));
+    assert.deepEqual(extractActionPins(workflow, "actions/checkout"), [
+      pinnedCheckout.replace("actions/checkout@", ""),
+    ]);
     assert.doesNotMatch(workflow, /actions\/checkout@v\d+/);
   });
 }
 
 test("publish workflow pins actions/setup-node to the same commit as CI", () => {
-  assert.match(publishWorkflow, new RegExp(pinnedSetupNode));
+  assert.deepEqual(extractActionPins(publishWorkflow, "actions/setup-node"), [
+    pinnedSetupNode.replace("actions/setup-node@", ""),
+  ]);
   assert.doesNotMatch(publishWorkflow, /actions\/setup-node@v\d+/);
 });
 
