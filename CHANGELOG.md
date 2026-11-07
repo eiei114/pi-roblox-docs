@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.22] - 2026-11-07
+
+### Changed
+
+- Pin the development Pi SDK modules to 1.5.0, align TypeBox with the SDK's 1.3.27 dependency, and verify the Roblox extension against the actual host (DOT-3351).
+
 ## [0.3.21] - 2026-11-02
 
 ### Changed
