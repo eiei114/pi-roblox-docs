@@ -94,7 +94,7 @@ pi -e ./extensions/roblox-docs.ts
 
 After the first sync, use `roblox_search`, `roblox_get_class`, `roblox_get_member`, `roblox_get_enum`, and `roblox_lookup_enum` for Roblox instance APIs. Use `roblox_get_luau_global` for Luau built-ins and Roblox globals such as `math`, `task`, and `typeof`.
 
-`roblox_health` and `/roblox:health` report cache freshness with a **7-day stale threshold**. Run `roblox_sync` when the cache is stale or missing.
+`roblox_health` and `/roblox:health` report cache freshness with a **7-day stale threshold**. Run `roblox_sync` when the cache is stale or missing. If the upstream `version.txt` check fails during sync (offline, proxy, or GitHub raw outage) and a complete local cache exists, sync reuses the cached docs and reports a warning naming the cache `lastSync` instead of failing.
 
 For detailed workflows, cache policy, Luau-vs-class guidance, and tool examples, see:
 
