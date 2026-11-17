@@ -1,0 +1,14 @@
+{
+  "Version": 1,
+  "Classes": [
+    {
+      "Name": "Workspace",
+      "Superclass": "<<<ROOT>>>",
+      "Members": [
+        { "MemberType": "Property", "Name": "Name", "ValueType": "string" },
+        { "MemberType": "Function", "Parameters": [], "ReturnType": "string" }
+      ]
+    }
+  ],
+  "Enums": []
+}

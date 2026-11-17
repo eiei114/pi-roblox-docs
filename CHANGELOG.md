@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0] - 2026-11-18
+
+### Added
+
+- Add `scripts/coverage-report.mjs` (`npm run coverage:report`), a dev-only report that prints API-Dump class, member (Property/Function/Event/Callback), deprecated and enum/enum-item totals for the raw dump vs. the data the extension indexes, exiting non-zero on mismatch (DOT-3723). Ships no new runtime dependency and is not part of the published tarball; usage documented in `docs/usage.md`.
+
 ## [0.3.22] - 2026-11-07
 
 ### Changed
