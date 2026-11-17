@@ -1,10 +1,25 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const manifest = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
+const SDK_PACKAGE_NAMES = Object.freeze([
+  "@earendil-works/pi-agent-core",
+  "@earendil-works/pi-ai",
+  "@earendil-works/pi-coding-agent",
+  "@earendil-works/pi-tui",
+]);
+const pinnedVersions = {};
+for (const name of SDK_PACKAGE_NAMES) {
+  const version = manifest.devDependencies?.[name];
+  if (typeof version !== "string" || version.trim().length === 0) {
+    throw new Error(`package.json must pin ${name} in devDependencies`);
+  }
+  pinnedVersions[name] = version;
+}
 export const VERIFICATION_CONTRACT = "pi-sdk-behavior-v2";
-export const SDK_VERSIONS = Object.freeze({
-  "@earendil-works/pi-agent-core": "1.5.0",
-  "@earendil-works/pi-ai": "1.5.0",
-  "@earendil-works/pi-coding-agent": "1.5.0",
-  "@earendil-works/pi-tui": "1.5.0",
-});
+export const SDK_VERSIONS = Object.freeze(pinnedVersions);
 export const SDK_NAMES = Object.keys(SDK_VERSIONS);
 export const UNHANDLED_ERROR_PATTERN = /UnhandledPromiseRejection|uncaught exception|shutdown error/i;
 export const EXTENSION_LOAD_ERROR_PATTERN = /Failed to load extension|Error loading extension/i;

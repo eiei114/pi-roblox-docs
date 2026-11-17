@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   behaviorAssertions,
   parseJsonLines,
@@ -8,6 +11,10 @@ import {
   VERIFICATION_CONTRACT,
   assertNoLocalWindowsPaths,
 } from "../scripts/pi-sdk-smoke-contract.mjs";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const manifest = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
+const pinnedSdkVersion = manifest.devDependencies?.["@earendil-works/pi-coding-agent"];
 
 const status = { type: "extension_ui_request", method: "setStatus", statusKey: "roblox-docs", statusText: "roblox-docs: run roblox_sync" };
 const inventory = { type: "response", id: "inventory", success: true, data: { commands: [{ name: "roblox:health" }, { name: "roblox:devforum" }] } };
@@ -19,10 +26,10 @@ const observation = (rows = [inventory, status, handledPrompt, health], exit_cod
 test("SDK behavior contract and JSONL parser are explicit", () => {
   assert.equal(VERIFICATION_CONTRACT, "pi-sdk-behavior-v2");
   assert.deepEqual(SDK_VERSIONS, {
-    "@earendil-works/pi-agent-core": "1.5.0",
-    "@earendil-works/pi-ai": "1.5.0",
-    "@earendil-works/pi-coding-agent": "1.5.0",
-    "@earendil-works/pi-tui": "1.5.0",
+    "@earendil-works/pi-agent-core": manifest.devDependencies?.["@earendil-works/pi-agent-core"],
+    "@earendil-works/pi-ai": manifest.devDependencies?.["@earendil-works/pi-ai"],
+    "@earendil-works/pi-coding-agent": manifest.devDependencies?.["@earendil-works/pi-coding-agent"],
+    "@earendil-works/pi-tui": manifest.devDependencies?.["@earendil-works/pi-tui"],
   });
   assert.deepEqual(parseJsonLines(`not-json\r\n${JSON.stringify(inventory)}\n\n`), [inventory]);
 });
@@ -87,12 +94,12 @@ test("reload requires second-process registration and feature response, not exit
 });
 
 test("native shell checks exact local Pi version, exit, and stderr", () => {
-  assert.equal(behaviorAssertions("host_shell", { exit_code: 0, shellStdout: "1.5.0\r\n", shellStderr: "" })[0].passed, true);
+  assert.equal(behaviorAssertions("host_shell", { exit_code: 0, shellStdout: `${pinnedSdkVersion}\r\n`, shellStderr: "" })[0].passed, true);
   for (const values of [
-    { exit_code: 1, shellStdout: "1.5.0", shellStderr: "" },
-    { exit_code: 0, shellStdout: "11.5.0", shellStderr: "" },
-    { exit_code: 0, shellStdout: "1.5.0 but error", shellStderr: "" },
-    { exit_code: 0, shellStdout: "1.5.0", shellStderr: "warning" },
+    { exit_code: 1, shellStdout: pinnedSdkVersion, shellStderr: "" },
+    { exit_code: 0, shellStdout: `11.${pinnedSdkVersion.split(".").slice(1).join(".")}`, shellStderr: "" },
+    { exit_code: 0, shellStdout: `${pinnedSdkVersion} but error`, shellStderr: "" },
+    { exit_code: 0, shellStdout: pinnedSdkVersion, shellStderr: "warning" },
   ]) {
     assert.equal(behaviorAssertions("host_shell", values)[0].passed, false);
   }
