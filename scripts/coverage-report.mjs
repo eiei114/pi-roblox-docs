@@ -50,6 +50,22 @@ function usage() {
   console.error("Usage: node scripts/coverage-report.mjs [path-to-api-dump.json] [--json]");
 }
 
+/**
+ * A real API-Dump.json is an object with Classes and Enums arrays. Rejecting
+ * anything else here (e.g. an error payload such as {"error":"download failed"})
+ * prevents the summarizers' `?? []` fallbacks from turning a broken download
+ * into an all-zero, "match: yes", exit-0 false success.
+ */
+function isValidApiDump(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Array.isArray(value.Classes) &&
+    Array.isArray(value.Enums)
+  );
+}
+
 function memberKindKeys(dump, indexed) {
   const keys = new Set(CANONICAL_MEMBER_KINDS);
   for (const key of Object.keys(dump.membersByKind)) keys.add(key);
@@ -119,6 +135,11 @@ async function main() {
     dump = JSON.parse(raw);
   } catch (error) {
     console.error(`Failed to parse API dump at ${source}: ${error.message}`);
+    process.exit(2);
+  }
+
+  if (!isValidApiDump(dump)) {
+    console.error(`Invalid API dump at ${source}: expected an object with Classes and Enums arrays.`);
     process.exit(2);
   }
 
