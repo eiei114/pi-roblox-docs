@@ -1,0 +1,32 @@
+{
+  "Version": 1,
+  "Classes": [
+    {
+      "Name": "Workspace",
+      "Superclass": "<<<ROOT>>>",
+      "Members": [
+        { "MemberType": "Property", "Name": "Name", "ValueType": "string" },
+        { "MemberType": "Function", "Name": "GetFullName", "Parameters": [], "ReturnType": "string" },
+        { "MemberType": "Event", "Name": "ChildAdded", "Parameters": [] },
+        { "MemberType": "Callback", "Name": "OnChildAdded" },
+        { "MemberType": "Property", "Name": "LegacyProp", "Tags": ["Deprecated"] }
+      ]
+    },
+    {
+      "Name": "BasePart",
+      "Superclass": "Workspace",
+      "Members": [
+        { "MemberType": "Property", "Name": "Anchored", "ValueType": "bool" }
+      ]
+    }
+  ],
+  "Enums": [
+    {
+      "Name": "Material",
+      "Items": [
+        { "Name": "Plastic", "Value": 256 },
+        { "Name": "Wood", "Value": 512 }
+      ]
+    }
+  ]
+}
