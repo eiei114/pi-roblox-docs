@@ -440,7 +440,90 @@ function describeMember(member: ApiMember): string {
   return type;
 }
 
-function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: CacheMeta): LoadedData {
+export interface ApiDumpSummary {
+  classes: number;
+  totalMembers: number;
+  membersByKind: Record<string, number>;
+  deprecatedMembers: number;
+  enums: number;
+  enumItems: number;
+}
+
+const CANONICAL_MEMBER_KINDS = ["Property", "Function", "Event", "Callback"] as const;
+
+function emptyMembersByKind(): Record<string, number> {
+  const membersByKind: Record<string, number> = {};
+  for (const kind of CANONICAL_MEMBER_KINDS) membersByKind[kind] = 0;
+  return membersByKind;
+}
+
+/**
+ * Raw totals straight from an API-Dump.json payload. Counts every entry,
+ * including ones the indexer would drop (for example unnamed members).
+ */
+export function summarizeApiDump(dump: ApiDump): ApiDumpSummary {
+  const membersByKind = emptyMembersByKind();
+  let totalMembers = 0;
+  let deprecatedMembers = 0;
+
+  for (const cls of dump.Classes ?? []) {
+    for (const member of cls.Members ?? []) {
+      totalMembers += 1;
+      const kind = member.MemberType ?? "Unknown";
+      membersByKind[kind] = (membersByKind[kind] ?? 0) + 1;
+      if (member.Tags?.includes("Deprecated")) deprecatedMembers += 1;
+    }
+  }
+
+  let enumItems = 0;
+  for (const enumInfo of dump.Enums ?? []) {
+    enumItems += enumInfo.Items?.length ?? 0;
+  }
+
+  return {
+    classes: dump.Classes?.length ?? 0,
+    totalMembers,
+    membersByKind,
+    deprecatedMembers,
+    enums: dump.Enums?.length ?? 0,
+    enumItems,
+  };
+}
+
+/**
+ * Totals for what the extension actually indexes (named classes/enums in the
+ * lookup maps, named members in the search index). Compare with
+ * summarizeApiDump() to detect dump entries that silently drop out.
+ */
+export function summarizeLoadedData(data: LoadedData): ApiDumpSummary {
+  const membersByKind = emptyMembersByKind();
+  let totalMembers = 0;
+  let deprecatedMembers = 0;
+
+  for (const item of data.searchItems) {
+    if (item.type !== "member") continue;
+    totalMembers += 1;
+    const kind = item.memberType ?? "Unknown";
+    membersByKind[kind] = (membersByKind[kind] ?? 0) + 1;
+    if (item.tags.includes("Deprecated")) deprecatedMembers += 1;
+  }
+
+  let enumItems = 0;
+  for (const enumInfo of data.enumMap.values()) {
+    enumItems += enumInfo.Items?.length ?? 0;
+  }
+
+  return {
+    classes: data.classMap.size,
+    totalMembers,
+    membersByKind,
+    deprecatedMembers,
+    enums: data.enumMap.size,
+    enumItems,
+  };
+}
+
+export function buildLoadedData(dump: ApiDump, docs: Record<string, unknown>, meta: CacheMeta): LoadedData {
   const classMap = new Map<string, ApiClass>();
   const enumMap = new Map<string, ApiEnum>();
   const inheritanceMap = new Map<string, string[]>();

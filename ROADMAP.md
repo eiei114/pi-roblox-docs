@@ -69,7 +69,7 @@ no known compliance gaps.
 
 | # | Item | Type | Bump | Acceptance |
 | --- | --- | --- | --- | --- |
-| 3.1 | Roblox API coverage map: generate a coverage report from `API-Dump.json` (class count, member count, enum count) vs. what the search index exposes. | coverage | minor | A `scripts/coverage-report.mjs` prints class/member/enum totals; numbers recorded here. |
+| 3.1 | Roblox API coverage map: generate a coverage report from `API-Dump.json` (class count, member count, enum count) vs. what the search index exposes. | coverage | minor | ✅ done — `scripts/coverage-report.mjs` (`npm run coverage:report`) prints class/member/enum totals for the dump vs. the indexed search data and exits non-zero on mismatch; see `docs/usage.md`. Live totals are intentionally not pasted here (they drift with every upstream dump); run the command against the synced cache. |
 | 3.2 | Caching strategy doc: codify OS cache locations, version-driven invalidation (`remoteVersion` vs cached), `--force` redownload, and the 1-hour DevForum TTL. | design | patch | Cache section below is the source of truth and matches code. |
 | 3.3 | Stale-cache resilience: define behavior when upstream `version.txt` is unreachable (reuse cache, surface a clear warning). | stabilization | minor | Offline/upstream-failure path tested; no crash, cache reused. |
 | 3.4 | Multi-language readiness: `DEFAULT_LANGUAGE` is central, but only one language path is exercised. Document the contract and add a guard test. | coverage | minor | Language switch is documented; invalid language falls back deterministically. |
@@ -121,7 +121,7 @@ index hit-rate) so coverage is observable rather than anecdotal.
 
 ## `pi-extension-template` compliance checklist
 
-Current status as of v0.3.22. Deviations are tracked here so they are intentional.
+Current status as of v0.4.0. Deviations are tracked here so they are intentional.
 
 | Item | Status | Note |
 | --- | --- | --- |

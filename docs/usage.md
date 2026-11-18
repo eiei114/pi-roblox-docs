@@ -65,6 +65,23 @@ After clearing, run `roblox_sync` before `roblox_search` and other API lookup to
 
 You usually do **not** need to clear cache for routine Roblox API version updates; `roblox_sync` skips the download when versions already match unless you pass `force=true`.
 
+## Coverage report
+
+`scripts/coverage-report.mjs` (dev-only, not shipped in the npm package) prints how many classes, members (by kind: Property, Function, Event, Callback), deprecated members and enums / enum items an `API-Dump.json` exposes, and compares the raw dump against what the extension actually indexes into its search data. A mismatch exits non-zero, so an upstream schema change that silently drops entries from `buildLoadedData()` is caught without reading code.
+
+```sh
+# Uses the synced cache file (PI_ROBLOX_DOCS_CACHE_DIR or the OS cache dir):
+npm run coverage:report
+
+# Or pass an explicit dump path (used by the tests with a fixture):
+node scripts/coverage-report.mjs tests/fixtures/api-dump-sample.json
+
+# Machine-readable output:
+node scripts/coverage-report.mjs tests/fixtures/api-dump-sample.json --json
+```
+
+The script never fetches over the network; run `roblox_sync` first if you want it to inspect the live cache. Exit codes: `0` totals match, `1` dump and indexed totals differ, `2` usage or file error.
+
 ## Troubleshooting
 
 | Symptom | Likely cause | What to do |
