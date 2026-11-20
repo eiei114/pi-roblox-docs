@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0] - 2026-11-19
+
+### Added
+
+- `roblox_sync` now reuses the existing cache when the upstream `version.txt` check fails (offline, proxy, or GitHub raw outage) and a complete local cache exists. It returns the cached meta with `skipped: true` plus a warning naming the cache `lastSync`; the cache files and `metadata.json` are left untouched. A missing cache, `force=true`, or an aborted signal still fails as before (DOT-3722).
+
 ## [0.4.0] - 2026-11-18
 
 ### Added

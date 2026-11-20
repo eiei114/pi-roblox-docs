@@ -71,7 +71,7 @@ no known compliance gaps.
 | --- | --- | --- | --- | --- |
 | 3.1 | Roblox API coverage map: generate a coverage report from `API-Dump.json` (class count, member count, enum count) vs. what the search index exposes. | coverage | minor | ✅ done — `scripts/coverage-report.mjs` (`npm run coverage:report`) prints class/member/enum totals for the dump vs. the indexed search data and exits non-zero on mismatch; see `docs/usage.md`. Live totals are intentionally not pasted here (they drift with every upstream dump); run the command against the synced cache. |
 | 3.2 | Caching strategy doc: codify OS cache locations, version-driven invalidation (`remoteVersion` vs cached), `--force` redownload, and the 1-hour DevForum TTL. | design | patch | Cache section below is the source of truth and matches code. |
-| 3.3 | Stale-cache resilience: define behavior when upstream `version.txt` is unreachable (reuse cache, surface a clear warning). | stabilization | minor | Offline/upstream-failure path tested; no crash, cache reused. |
+| 3.3 | Stale-cache resilience: define behavior when upstream `version.txt` is unreachable (reuse cache, surface a clear warning). | stabilization | minor | ✅ done — `syncRobloxData` wraps the `version.txt` fetch; on non-abort failure with a complete cache and `force=false` it returns the cached meta with `skipped: true` plus a warning naming `lastSync`; covered by `tests/sync-offline.test.mjs`. |
 | 3.4 | Multi-language readiness: `DEFAULT_LANGUAGE` is central, but only one language path is exercised. Document the contract and add a guard test. | coverage | minor | Language switch is documented; invalid language falls back deterministically. |
 
 ---
@@ -114,14 +114,13 @@ index hit-rate) so coverage is observable rather than anecdotal.
   to the cached version; matching versions skip the download unless `force=true`.
 - **DevForum cache:** separate `devforum-cache.json`, 1-hour TTL, cleared by
   `/roblox:clear-cache`.
-- **Resilience (Phase 3.3):** when upstream is unreachable, reuse the existing
-  cache and surface a warning rather than failing.
+- **Resilience (Phase 3.3, implemented):** when upstream `version.txt` is unreachable, sync reuses the existing cache and surfaces a warning naming the cache `lastSync` rather than failing. The cache files and `metadata.json` are not rewritten in this path; a missing cache, `force=true`, or an aborted signal still fails.
 
 ---
 
 ## `pi-extension-template` compliance checklist
 
-Current status as of v0.4.0. Deviations are tracked here so they are intentional.
+Current status as of v0.5.0. Deviations are tracked here so they are intentional.
 
 | Item | Status | Note |
 | --- | --- | --- |

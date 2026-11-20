@@ -196,6 +196,26 @@ async function readMeta(language = DEFAULT_LANGUAGE): Promise<CacheMeta> {
   }
 }
 
+async function hasUsableCache(language: string, meta: CacheMeta): Promise<boolean> {
+  if (
+    meta.language !== language ||
+    typeof meta.version !== "string" || meta.version.length === 0 ||
+    typeof meta.apiDumpVersion !== "number" || !Number.isFinite(meta.apiDumpVersion)
+  ) return false;
+
+  const paths = cachePaths(language);
+  try {
+    const [dump, docs] = await Promise.all([
+      readJson<ApiDump>(paths.apiDump),
+      readJson<unknown>(paths.apiDocs),
+    ]);
+    return typeof dump === "object" && dump !== null && dump.Version === meta.apiDumpVersion &&
+      typeof docs === "object" && docs !== null && !Array.isArray(docs);
+  } catch {
+    return false;
+  }
+}
+
 async function fetchText(url: string, signal?: AbortSignal, retries = 3): Promise<string> {
   let lastError: unknown;
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -218,17 +238,29 @@ async function fetchText(url: string, signal?: AbortSignal, retries = 3): Promis
   throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
-async function syncRobloxData(force: boolean, language: string, signal?: AbortSignal, onUpdate?: (update: { content: Array<{ type: "text"; text: string }>; details: unknown }) => void): Promise<CacheMeta & { cacheDir: string; downloaded: string[]; skipped: boolean }> {
+export async function syncRobloxData(force: boolean, language: string, signal?: AbortSignal, onUpdate?: (update: { content: Array<{ type: "text"; text: string }>; details: unknown }) => void): Promise<CacheMeta & { cacheDir: string; downloaded: string[]; skipped: boolean; warning?: string }> {
   const paths = cachePaths(language);
   await mkdir(paths.dir, { recursive: true });
 
   const localMeta = await readMeta(language);
-  const hasRequiredFiles = (await exists(paths.apiDump)) && (await exists(paths.apiDocs));
+  const hasUsableLocalCache = await hasUsableCache(language, localMeta);
 
   onUpdate?.({ content: [{ type: "text", text: "Checking Roblox API version..." }], details: {} });
-  const remoteVersion = (await fetchText(SOURCES.version, signal)).trim();
+  let remoteVersion: string;
+  try {
+    remoteVersion = (await fetchText(SOURCES.version, signal)).trim();
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (!force && hasUsableLocalCache) {
+      const message = error instanceof Error ? error.message : String(error);
+      const lastSync = typeof localMeta.lastSync === "string" && localMeta.lastSync.length > 0 ? localMeta.lastSync : "an unknown time";
+      const warning = `Could not reach upstream version.txt (${message}); using cached Roblox docs from ${lastSync}.`;
+      return { ...localMeta, cacheDir: paths.dir, downloaded: [], skipped: true, warning };
+    }
+    throw error;
+  }
 
-  if (!force && hasRequiredFiles && localMeta.version === remoteVersion) {
+  if (!force && hasUsableLocalCache && localMeta.version === remoteVersion) {
     return { ...localMeta, cacheDir: paths.dir, downloaded: [], skipped: true };
   }
 
@@ -236,15 +268,19 @@ async function syncRobloxData(force: boolean, language: string, signal?: AbortSi
 
   onUpdate?.({ content: [{ type: "text", text: "Downloading API-Dump.json..." }], details: {} });
   const apiDumpText = await fetchText(SOURCES.apiDump, signal);
-  await writeFile(paths.apiDump, apiDumpText, "utf8");
-  downloaded.push("api-dump.json");
 
   onUpdate?.({ content: [{ type: "text", text: `Downloading api-docs/${language}.json...` }], details: {} });
   const apiDocsText = await fetchText(SOURCES.apiDocs(language), signal);
+
+  // Do not replace one half of a known-good cache when the other upstream
+  // request fails. Metadata remains the generation marker for both files.
+  const parsedDump = JSON.parse(apiDumpText) as ApiDump;
+  JSON.parse(apiDocsText);
+  await writeFile(paths.apiDump, apiDumpText, "utf8");
+  downloaded.push("api-dump.json");
   await writeFile(paths.apiDocs, apiDocsText, "utf8");
   downloaded.push(`api-docs-${language}.json`);
 
-  const parsedDump = JSON.parse(apiDumpText) as ApiDump;
   const meta: CacheMeta = {
     version: remoteVersion,
     apiDumpVersion: parsedDump.Version ?? null,
@@ -909,7 +945,9 @@ export default function (pi: ExtensionAPI) {
       const result = await syncRobloxData(params.force === true, language, signal, onUpdate);
       ctx.ui.setStatus("roblox-docs", "roblox-docs: cached");
       const text = result.skipped
-        ? `Roblox docs cache is already current.\nVersion: ${result.version ?? "unknown"}\nCache: ${result.cacheDir}`
+        ? result.warning
+          ? `Warning: ${result.warning}\nRoblox docs cache is being reused; the upstream version could not be verified.\nCached version: ${result.version ?? "unknown"}\nCache: ${result.cacheDir}`
+          : `Roblox docs cache is already current.\nVersion: ${result.version ?? "unknown"}\nCache: ${result.cacheDir}`
         : `Roblox docs sync complete.\nVersion: ${result.version ?? "unknown"}\nAPI dump version: ${result.apiDumpVersion ?? "unknown"}\nDownloaded: ${result.downloaded.join(", ")}\nCache: ${result.cacheDir}`;
       return toolText(text, result as unknown as Record<string, unknown>);
     },
@@ -1142,7 +1180,9 @@ export default function (pi: ExtensionAPI) {
       });
       ctx.ui.setStatus("roblox-docs", "roblox-docs: cached");
       const message = result.skipped
-        ? `Roblox docs cache is already current (${result.version ?? "unknown"}).`
+        ? result.warning
+          ? `Warning: ${result.warning} Reusing cached Roblox docs; the upstream version could not be verified (cached ${result.version ?? "unknown"}).`
+          : `Roblox docs cache is already current (${result.version ?? "unknown"}).`
         : `Roblox docs sync complete (${result.version ?? "unknown"}). Downloaded: ${result.downloaded.join(", ")}`;
       ctx.ui.notify(message, "info");
     },
