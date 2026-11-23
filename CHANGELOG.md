@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.1] - Unreleased
+
+### Fixed
+
+- `roblox_search` no longer returns unrelated classes when they do not match the query (DOT-4158).
+
 ## [0.5.0] - 2026-11-19
 
 ### Added
