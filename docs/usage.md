@@ -45,13 +45,13 @@ Use `roblox_lookup_enum` when the enum name is fuzzy, abbreviated, or misspelled
 
 ## Cache
 
-Cache location is OS-specific:
+Sync (`roblox_sync` or `/roblox:sync`) and cache clearing use the same cache directory. A non-empty `PI_ROBLOX_DOCS_CACHE_DIR` in Pi's environment takes precedence over the OS defaults below. It is the cache directory itself; the extension does not append `pi-roblox-docs` to it.
 
-- Windows: `%LOCALAPPDATA%/pi-roblox-docs`
+- Windows: `%LOCALAPPDATA%/pi-roblox-docs`, or `~/AppData/Local/pi-roblox-docs` if `LOCALAPPDATA` is unset
 - macOS: `~/Library/Caches/pi-roblox-docs`
-- Linux: `~/.cache/pi-roblox-docs`
+- Linux: `$XDG_CACHE_HOME/pi-roblox-docs`, or `~/.cache/pi-roblox-docs` if `XDG_CACHE_HOME` is unset
 
-The extension does not write large Roblox JSON files into your project or Obsidian vault.
+Here `~` denotes your home directory. By default, cache files are stored outside your project or Obsidian vault.
 
 `roblox_health` and `/roblox:health` report cache freshness using a **7-day stale threshold** based on `metadata.json` `lastSync`. Fresh caches stay compact; stale or missing caches include a short recommendation to run `roblox_sync`.
 
@@ -61,7 +61,9 @@ If the upstream `version.txt` check fails during `roblox_sync` (offline, proxy, 
 
 ### Clearing cache
 
-Use `roblox_clear_cache` or `/roblox:clear-cache` when local sync or index data looks corrupted, you suspect stale files after manual edits, or you want a clean re-download. The tool deletes only the package-owned `pi-roblox-docs` cache directory shown above. It does not delete project files, your Obsidian vault, or caches owned by other Pi packages.
+Use `roblox_clear_cache` or `/roblox:clear-cache` when local sync or index data looks corrupted, you suspect stale files after manual edits, or you want a clean re-download. Both delete the entire resolved cache directory and all its contents, whether it comes from the OS default or the override.
+
+**Set `PI_ROBLOX_DOCS_CACHE_DIR` only to a directory dedicated to this package's cache.** Never point it at a project directory, an Obsidian vault, or a shared cache directory. Check the resolved path before clearing; `/roblox:clear-cache` displays it in the confirmation prompt.
 
 After clearing, run `roblox_sync` before `roblox_search` and other API lookup tools work again. `roblox_health` reports missing cache files and `INDEX: not built (run roblox_sync first)` until you sync.
 
