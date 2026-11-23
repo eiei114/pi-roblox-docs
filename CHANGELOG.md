@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.2] - Unreleased
+
+### Documentation
+
+- Clarify which cache directory Roblox docs sync and clear-cache use, including override precedence and safe override locations (DOT-4159).
+
 ## [0.5.1] - Unreleased
 
 ### Fixed
