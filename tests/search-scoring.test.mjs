@@ -65,3 +65,25 @@ test("search returns empty results for blank tokenized queries", () => {
 
   assert.deepEqual(search(data, "a", 5), []);
 });
+
+test("search returns empty results when no entry matches a nonblank query", () => {
+  const data = makeData([
+    makeSearchItem({ type: "class", name: "Part", description: "A base part" }),
+    makeSearchItem({ type: "class", name: "Folder", description: "An object container" }),
+  ]);
+
+  assert.deepEqual(search(data, "quasar", 5), []);
+});
+
+test("search returns only the matching member when no classes match", () => {
+  const data = makeData([
+    makeSearchItem({ type: "class", name: "Folder", description: "An object container" }),
+    makeSearchItem({ type: "class", name: "Signal", description: "A notification source" }),
+    makeSearchItem({ type: "member", name: "EmitPulse", className: "Signal" }),
+  ]);
+
+  const results = search(data, "EmitPulse", 5);
+  assert.deepEqual(results.map(({ type, className, name }) => ({ type, className, name })), [
+    { type: "member", className: "Signal", name: "EmitPulse" },
+  ]);
+});

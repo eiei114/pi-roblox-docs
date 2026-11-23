@@ -673,7 +673,7 @@ function scoreSearchItem(item: SearchResult, query: SearchQueryContext): number 
     }
   }
 
-  if (item.type === "class") score += 8;
+  if (score > 0 && item.type === "class") score += 8;
   if (item.tags.includes("Deprecated")) score -= 5;
   return score;
 }
