@@ -9,6 +9,13 @@ import test from "node:test";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cli = fileURLToPath(new URL("../node_modules/@earendil-works/pi-coding-agent/dist/cli.js", import.meta.url));
 const extension = fileURLToPath(new URL("../extensions/roblox-docs.ts", import.meta.url));
+const piDocs = fileURLToPath(new URL("../node_modules/@earendil-works/pi-coding-agent/docs/", import.meta.url));
+// Pi 1.6 can warn at RPC startup on a credential-free host but still handle extension commands.
+const noModelsWarning = [
+  "Warning: No models available. Use /login to log into a provider via OAuth or API key. See:",
+  `  ${join(piDocs, "providers.md")}`,
+  `  ${join(piDocs, "models.md")}`,
+].join("\n");
 
 async function realHealth(env) {
   return new Promise((resolve, reject) => {
@@ -62,7 +69,8 @@ async function realHealth(env) {
     });
     child.on("close", (code) => {
       clearTimeout(deadline); clearTimeout(cleanup);
-      if (failure || code !== 0 || stderr.trim() || tail.trim() || !ended) {
+      const diagnostic = stderr.replaceAll("\r\n", "\n").trim();
+      if (failure || code !== 0 || (diagnostic && diagnostic !== noModelsWarning) || tail.trim() || !ended) {
         reject(new Error(failure || `actual Pi incomplete/nonzero response: exit=${code}, stderr=${stderr.slice(-500)}`));
       } else resolve(rows);
     });

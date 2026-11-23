@@ -23,7 +23,8 @@ export const SDK_VERSIONS = Object.freeze(pinnedVersions);
 export const SDK_NAMES = Object.keys(SDK_VERSIONS);
 export const UNHANDLED_ERROR_PATTERN = /UnhandledPromiseRejection|uncaught exception|shutdown error/i;
 export const EXTENSION_LOAD_ERROR_PATTERN = /Failed to load extension|Error loading extension/i;
-const LOCAL_WINDOWS_PATH_PATTERN = /[A-Z]:(?:\\{1,8})/i;
+// Match a drive-letter prefix, not a word ending in a colon before a JSON escape (e.g. See:\n).
+const LOCAL_WINDOWS_PATH_PATTERN = /(?:\b|(?<=\\[nrt]))[A-Z]:\\/i;
 const LOCAL_WINDOWS_PATH_REDACTION_PATTERN = /\b[A-Z]:(?:\\{1,8})[^ \t\r\n"'<>|,;)}\]]+/gi;
 
 export function redactLocalPaths(value, prefixes) {

@@ -51,7 +51,13 @@ test("report redaction covers nested JSON stdout and rejects local Windows paths
 
   assert.doesNotMatch(reportText, /[A-Z]:(?:\\{1,8})/i);
   assert.doesNotThrow(() => assertNoLocalWindowsPaths(reportText));
+  assert.doesNotThrow(() => assertNoLocalWindowsPaths(JSON.stringify({
+    evidence: JSON.stringify({ stderr: "Warning: No models available. See:\n  <repo>/docs/models.md\n" }),
+  })));
   assert.throws(() => assertNoLocalWindowsPaths(JSON.stringify({ evidence: String.raw`C:\Users\someone\repo` })));
+  assert.throws(() => assertNoLocalWindowsPaths(JSON.stringify({
+    evidence: `Warning:\n${String.raw`C:\Users\someone\repo`}`,
+  })));
 });
 
 test("extension registration requires the actual command inventory and session status", () => {
