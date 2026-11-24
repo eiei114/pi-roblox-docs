@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, rm } from "node:fs/promises";
-import { readFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -41,7 +40,6 @@ test.beforeEach(async () => {
   originalCacheDir = process.env.PI_ROBLOX_DOCS_CACHE_DIR;
   testCacheDir = join(tmpdir(), `pi-roblox-docs-cache-tools-${process.pid}-${Math.random().toString(36).slice(2)}`);
   process.env.PI_ROBLOX_DOCS_CACHE_DIR = testCacheDir;
-  await mkdir(testCacheDir, { recursive: true });
   await clearRobloxCache();
 });
 
@@ -71,5 +69,23 @@ for (const toolName of cacheDependentTools) {
     assert.match(text, new RegExp(`Cache path: ${testCacheDir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
     assert.equal(result.details?.error, "not_synced");
     assert.equal(result.details?.cacheDir, testCacheDir);
+  });
+}
+
+for (const [className, expectedSubclass] of [["basepart", undefined], ["part", "Part"]]) {
+  test(`roblox_get_member reports inheritance correctly for ${className}.Anchored`, async () => {
+    await mkdir(testCacheDir, { recursive: true });
+    await copyFile(new URL("./fixtures/member-inheritance-api-dump.json", import.meta.url), join(testCacheDir, "api-dump.json"));
+    await writeFile(join(testCacheDir, "api-docs-en-us.json"), "{}", "utf8");
+    const { tools, pi } = createMockPi();
+    registerRobloxDocsExtension(pi);
+
+    const result = await tools.get("roblox_get_member").execute("test-call", { className, memberName: "Anchored" });
+    const lines = result.content[0].text.split("\n");
+
+    assert.equal(lines[0], "PROPERTY: BasePart.Anchored");
+    assert.deepEqual(lines.filter((line) => line.startsWith("Inherited by:")), expectedSubclass ? [`Inherited by: ${expectedSubclass}`] : []);
+    assert.ok(lines.includes("DOCS: https://create.roblox.com/docs/reference/engine/classes/BasePart#Anchored"));
+    assert.deepEqual(result.details, { className: "BasePart", memberName: "Anchored", memberType: "Property" });
   });
 }

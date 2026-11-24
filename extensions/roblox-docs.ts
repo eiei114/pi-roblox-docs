@@ -782,14 +782,14 @@ function formatClass(data: LoadedData, cls: ApiClass, includeMembers: boolean, m
   return truncateOutput(lines.join("\n")).text;
 }
 
-function findMember(data: LoadedData, className: string, memberName: string): { owner: ApiClass; member: ApiMember } | undefined {
+function findMember(data: LoadedData, className: string, memberName: string): { owner: ApiClass; member: ApiMember; requestedClassName: string } | undefined {
   const cls = data.classMap.get(normalizeName(className));
   if (!cls?.Name) return undefined;
   const chain = data.inheritanceMap.get(normalizeName(cls.Name)) ?? [cls.Name];
   for (const ownerName of chain) {
     const owner = data.classMap.get(normalizeName(ownerName));
     const member = owner?.Members?.find((candidate) => normalizeName(candidate.Name ?? "") === normalizeName(memberName));
-    if (owner && member) return { owner, member };
+    if (owner && member) return { owner, member, requestedClassName: cls.Name };
   }
   return undefined;
 }
@@ -1071,7 +1071,7 @@ export default function (pi: ExtensionAPI) {
         const suggestions = (cls?.Members ?? []).filter((member) => normalizeName(member.Name ?? "").includes(normalizeName(params.memberName))).slice(0, 8).map((member) => member.Name);
         return toolText(`Member "${params.memberName}" not found in ${params.className}.${suggestions.length ? ` Similar: ${suggestions.join(", ")}` : ""}`, { error: "not_found", suggestions: suggestions.filter(Boolean) });
       }
-      const output = formatMember(data, found.owner, params.className, found.member);
+      const output = formatMember(data, found.owner, found.requestedClassName, found.member);
       return toolText(output, { className: found.owner.Name, memberName: found.member.Name, memberType: found.member.MemberType });
     },
   });
