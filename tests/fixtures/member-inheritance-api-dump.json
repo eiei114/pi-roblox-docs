@@ -1,0 +1,14 @@
+{
+  "Version": 1,
+  "Classes": [
+    {
+      "Name": "BasePart",
+      "Superclass": "PVInstance",
+      "Members": [
+        { "MemberType": "Property", "Name": "Anchored", "ValueType": "bool" }
+      ]
+    },
+    { "Name": "Part", "Superclass": "BasePart", "Members": [] }
+  ],
+  "Enums": []
+}

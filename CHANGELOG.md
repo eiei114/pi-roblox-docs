@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.3] - Unreleased
+
+### Fixed
+
+- `roblox_get_member` shows `Inherited by` only for a subclass and uses its canonical name regardless of input casing (DOT-4262).
+
 ## [0.5.2] - Unreleased
 
 ### Documentation
